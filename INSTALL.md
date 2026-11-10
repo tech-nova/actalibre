@@ -1,0 +1,63 @@
+# Installer ou mettre à jour ActaLibre
+
+La première version prend en charge **Apache avec PHP 8.3 ou plus récent**, MySQL et le pilote mysqlnd. Les autres serveurs ne sont pas pris en charge en 1.0. Les extensions obligatoires figurent dans `composer.json` : filter, gd, iconv, mbstring, mysqli, mysqlnd, session et xml. OpenSSL sert au géocodage HTTPS ; cURL permet le contrôle HTTP des protections. Leur absence laisse ces fonctions indisponibles.
+
+L’archive doit être transférée en entier, fichiers commençant par un point compris. Elle contient `composer.json` et `inventaire-actalibre.json`, sans `vendor/` ni `composer.lock`. Composer n’est pas nécessaire sur le serveur. Servez le site en HTTPS pour protéger les identifiants transmis par les formulaires.
+
+## Première installation sur une base vierge
+
+1. Créer la base MySQL et un utilisateur ayant les droits nécessaires sur cette base, avec l’outil de l’hébergeur. ActaLibre crée ses tables, pas la base MySQL elle-même.
+2. Extraire l’archive, puis transférer son contenu par FTP dans le dossier choisi, à la racine du domaine ou dans un sous-dossier.
+3. Ouvrir `install.php`. Indiquer l’adresse complète et canonique du site, sous-dossier compris, les accès MySQL et le préfixe des tables, puis l’identifiant, le courriel et le mot de passe du premier administrateur.
+4. La base doit être vierge pour ce préfixe. Aucune donnée ExpoActes n’est nécessaire : les tables, paramètres, métadonnées et prénoms sont livrés. Le site s’appelle initialement « Mon site principal ». Aucune ligne `EA_VERSION` n’est créée.
+5. Après une interruption, reprendre le formulaire avec les mêmes accès. Si un administrateur existe déjà, ses identifiants sont exigés ; aucun second compte n’est ajouté.
+
+Le fichier de connexion est publié complet dans `_config/connect.inc.php`, sans remplacer un fichier existant. Si la publication automatique est impossible, déposer par FTP le contenu exact affiché, puis fermer cette page : il contient les accès MySQL. Une reprise après finalisation des marqueurs rattache le site et renvoie vers `update.php` ; le nettoyage de restes terminés demande un administrateur.
+
+Un rattachement à une base existante exige son administrateur. Le groupe facultatif « Base des comptes distincte » sert à une table des comptes située dans une autre base ou sous un autre préfixe. Le rattachement ne crée ni tables ni comptes.
+
+## Migration depuis ExpoActes 3.2.4 uniquement
+
+1. Mettre l’ancien site en maintenance et sauvegarder **toutes** ses bases, notamment la table des comptes si elle est distincte. Une sauvegarde des seuls actes ne suffit pas. Garder également une copie complète des fichiers, hors du dossier publié.
+2. Transférer l’archive ActaLibre entière par-dessus le site, fichiers cachés compris. Activer PHP ≥ 8.3 à ce moment : l’ancien code peut ne pas fonctionner avec cette version.
+3. Ouvrir `update.php`, vérifier l’adresse canonique puis s’authentifier avec un compte de niveau 9. Les pages ordinaires restent en maintenance jusqu’à la fin de la migration. `install/update.php` redirige vers la nouvelle adresse sans rejouer le POST.
+4. Laisser les formulaires de continuation se soumettre automatiquement. Sans JavaScript, cliquer sur « Continuer ». Après une interruption ou une session expirée, rouvrir `update.php` et se reconnecter : l’avancement est repris. Les utilisateurs gardent leur mot de passe, converti au nouveau format.
+5. Vérifier le bilan, le contrôle des protections et la liste des fichiers non reconnus, puis retirer ceux qui sont inutiles par FTP. Sortir de la maintenance d’exploitation si elle était activée dans les paramètres.
+
+Les anciens dossiers `_logs/` et `_backup/` sont archivés entiers, par renommage, dans `tmp/archive/YYMMDDHHMMSS/logs` et `backups`. Il n’y a ni lecture de leur contenu, ni copie puis suppression. Une collision, un changement de volume ou un échec laisse la source en place et affiche un avertissement sans bloquer SQL. Une reprise peut utiliser un autre horodatage pour une source restante. Les anciens fichiers de protection sont conservés avec ces dossiers.
+
+Pour restaurer une ancienne sauvegarde d’actes `.bea` après migration, recopier par FTP le fichier voulu depuis `tmp/archive/YYMMDDHHMMSS/backups/` vers `tmp/backups/`, sans écraser un fichier existant : la page de restauration ne liste que les sauvegardes de ce dernier dossier.
+
+Sur de grosses tables MyISAM, un `ALTER TABLE` peut dépasser le délai PHP ou Apache. La reprise ne supprime pas cette limite : faire augmenter les délais de l’hébergement si la même étape échoue à chaque essai. Pour revenir en arrière, restaurer les fichiers **et toutes les bases** sauvegardées, ainsi que l’ancienne version de PHP si nécessaire ; les empreintes converties ne sont plus lisibles par ExpoActes.
+
+Depuis ActaLibre, sauvegarder également les fichiers et bases, transférer le nouveau code puis ouvrir `update.php`. À schéma identique, seul le produit est mis à jour après authentification. Aucune migration vers un autre schéma ActaLibre n’est livrée en 1.0.
+
+## Stockage et protections
+
+- `_config/` garde les fichiers de connexion et les personnalisations CSS. **La configuration ne va pas dans tmp.** Les CSS restent accessibles ; les autres fichiers sont refusés par le modèle Apache.
+- `tmp/logs/` reçoit les journaux de fichiers ; le journal des opérations en base reste dans sa table SQL.
+- `tmp/backups/` reçoit les sauvegardes `.bea`, leurs fichiers de progression et les dumps `<nom-base>_AAAA-MM-JJ.sql`.
+- `tmp/archive/` conserve les anciens journaux et sauvegardes ; `tmp/actalibre/protection.json` contient le dernier rapport HTTP, sans secret ni corps de réponse.
+- `admin/_upload/`, ou le dépôt défini par `UPLOAD_DIR`, reste protégé et accueille les imports et leurs modèles.
+
+PHP doit pouvoir écrire dans ces dossiers. Faire ajuster leurs droits par l’hébergeur si nécessaire ; ne pas rendre les fichiers de connexion publics. Les écritures de journaux et sauvegardes restent dans `tmp/` même si sa protection n’est pas vérifiée : l’avertissement doit être examiné.
+
+Les modèles `.htaccess` sont installés, ceux restés identiques à des modèles anciens peuvent être actualisés, et les personnalisations sont conservées. Pendant une migration Apache, un bloc de refus pour `composer.*` et l’inventaire peut être ajouté à la racine, sans remplacer ses réglages. Un bloc incomplet ou un cas complexe est signalé pour intervention manuelle. `install/.htaccess` refuse les sources et `p_info.php`.
+
+Le contrôle HTTP utilise l’adresse canonique validée, un témoin public et des témoins privés temporaires. Il distingue une protection **vérifiée**, **refusée** ou **indéterminée**. Une réponse 500, un délai dépassé, une URL incorrecte ou l’absence de cURL ne prouvent pas une protection. Le site s’interroge lui-même par son adresse publique, en s’annonçant `ActaLibre/<version> (controle des protections)`, avec au plus 2 s par essai et 10 s en tout. La page de contrôle détaille chaque essai : code HTTP ou cause (délai, connexion, certificat, contenu inattendu). Si le fichier public témoin n’est pas servi, les autres essais ne sont pas tentés : vérifier d’abord que le serveur peut joindre sa propre adresse (pare-feu, DNS interne, redirection vers HTTPS). L’installation et SQL peuvent aboutir avec un avertissement. Un serveur PHP intégré, qui ne lit pas les `.htaccess`, ne valide pas cette protection.
+
+Un administrateur de niveau 9 trouve l’état du dernier contrôle et le nombre de fichiers non reconnus dans **Paramétrage du logiciel → Protection**. Le lien « Détail et nouveau contrôle » ouvre le tableau des essais, la liste des chemins et le formulaire qui relance le contrôle. Le bandeau administratif persiste tant qu’un contrôle n’est pas vérifié. La page de consultation n’effectue aucune sonde ; seule l’action POST protégée la relance. Si Apache n’accepte pas les directives ou ignore les `.htaccess`, faire corriger sa configuration, puis relancer le contrôle.
+
+## Fichiers non reconnus et retrait par FTP
+
+La liste compare les noms et types à l’inventaire de cette livraison et aux données produites par l’application. **Aucun fichier inconnu n’est déplacé, supprimé, ouvert, haché ou exécuté par cette analyse.** Un dossier entièrement inconnu apparaît sur une seule ligne, sans détailler son contenu ; les liens ne sont pas suivis. Un inventaire absent, invalide ou une copie incomplète donne un diagnostic d’analyse non réalisée.
+
+La présence dans la liste ne signifie pas qu’un fichier est malveillant. Des fichiers légitimes de l’hébergeur ou des personnalisations, par exemple `.well-known/`, `.user.ini` ou des images ajoutées, peuvent y figurer. Vérifier chaque chemin avec son responsable et garder une copie hors de l’espace publié avant de le retirer par FTP. Conserver les éléments nécessaires à l’hébergement. Le déplacement automatique est reporté à une version ultérieure.
+
+Les anciens scripts disparus et les fichiers de debug encore présents après transfert doivent également être examinés. La liste montre leurs chemins sans afficher leur contenu ni fournir de lien pour les exécuter. L’ancien assistant `install/configuration.php`, s’il subsiste, doit être retiré.
+
+## Paramètres et restauration XML
+
+L’édition est limitée au groupe affiché ; les groupes cachés et les marqueurs internes sont protégés. Une sauvegarde XML peut être restaurée vers un autre préfixe : tout le document est validé avant la première écriture. Une colonne inconnue, une clé manquante ou répétée, un mélange de préfixes ou une ambiguïté entre clé NULL et vide refuse l’import. Une clé vide réutilise une ligne NULL ou vide unique et est insérée comme chaîne vide si elle manque.
+
+L’adresse `URL_PUBLIQUE`, les marqueurs et l’absence ou la valeur historique d’`EA_VERSION` restent propres au site destinataire. Les tables MyISAM ne permettent pas d’annuler toutes les écritures après une erreur SQL : contrôler la base puis rejouer l’import corrigé. Les aides publiques et les modèles CSV livrés restent accessibles depuis l’administration.

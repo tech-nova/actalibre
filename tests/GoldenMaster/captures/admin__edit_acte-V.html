@@ -1,0 +1,308 @@
+HTTP 200
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48" />
+<link rel="icon" href="/img/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/img/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/img/favicon-48x48.png" type="image/png" sizes="48x48" />
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180" />
+<link rel="stylesheet" href="/_config/actes.css" type="text/css" />
+<link rel="stylesheet" href="/_config/actes_print.css" type="text/css"  media="print" />
+<link rel="stylesheet" href="/tools/tarteaucitron/css/tarteaucitron.min.css" type="text/css" />
+<script type="text/javascript" src="/tools/tarteaucitron/tarteaucitron.min.js"></script>
+<script type="application/json" id="consentement-reglages">{"message":"Les cookies nous permettent de faciliter la navigation et l\u0027usage du site, de personnaliser le contenu et les annonces et d\u0027analyser notre trafic. L\u0027usage du site implique l\u0027acceptation de ces cookies.","adresse":"https:\/\/www.allaboutcookies.org\/fr\/","position":"top"}</script>
+<script type="text/javascript" src="/tools/js/consentement.js"></script>
+<title>Edition d&#039;un acte</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="expires" content="never" />
+<meta name="revisit-after" content="15 days" />
+<meta name="robots" content="all, index, follow" />
+<meta name="description" content=" Edition d&#039;un acte" />
+<meta name="keywords" content="généalogie, dépouillement, actes, tables, patronymes, BMS, NMD, commune, paroisse, Edition d&#039;un acte" />
+<meta name="generator" content="ExpoActes" />
+
+</head>
+<body id="edit_acte"  >
+<div id="top" class="entete"><div class="bandeau">
+<strong><a href="">Expoactes</a> || </strong>
+D&eacute;pouillement de tables et actes d'&eacute;tat-civil ou de registres paroissiaux
+</div>
+
+</div>
+<div class="navigation">Navigation :: <a href="/index.php">Accueil</a>
+ &gt; <a href="/admin/index.php">Administration</a>
+ &gt; Edition d&#039;un acte
+</div>
+<p class="erreur" role="status">Protection des fichiers privés non vérifiée. Consultez le contrôle des protections. <a href="/admin/protection.php">Contrôle des protections</a></p>
+<div id="col_menu"><div class="menu_zone">
+<div class="menu_titre">Recherche directe</div>
+<form class="form_rech" name="recherche" method="post" action="/chercher.php">
+&nbsp;<input type="text" name="achercher" />
+&nbsp;<input type="submit" name="Submit" value="Chercher" />
+<br /><input type="radio" name="zone" value="1" checked="checked" />Intéressé(e) 
+<br /><input type="radio" name="zone" value="2" />Mère, conjoint, témoins, parrain...
+<br />&nbsp;Dans les actes de&nbsp;
+<select name="typact" size="1">
+<option value="N">Naissances</option>
+<option value="M">Mariages</option>
+<option value="D">Décès</option>
+<option value="V">Actes divers</option>
+ </select>
+<input type="hidden" name="direct" value="1" />
+<input type="hidden" name="debug" value="" />
+<div class="menuTexte" align="right"><dl><dd><a href="/rechavancee.php">Recherche avancée</a>&nbsp; &nbsp;</dd></dl></div></form>
+</div>
+<div class="menu_zone">
+<div class="menu_titre">Administration&nbsp; &nbsp;&lt;fictif_admin&gt;</div>
+<div class="menuCorps"><dl>
+<dt><a href="/admin/index.php">Inventaire des actes</a></dt>
+<dt><a href="/changepw.php">Changer le mot de passe</a></dt>
+<dt><a href="/admin/charge.php">Charger des actes NIMEGUE</a></dt>
+<dt><a href="/admin/chargecsv.php">Charger des actes CSV</a></dt>
+<dt><a href="/admin/supprime.php">Supprimer des actes</a></dt>
+<dt><a href="/admin/exporte.php">Réexporter des actes</a></dt>
+<dt><a href="/admin/maj_sums.php">Administrer les données</a></dt>
+<dt><a href="/admin/listusers.php">Administrer les utilisateurs</a></dt>
+<dt><a href="/admin/gest_params.php">Administrer le logiciel</a></dt>
+<dt><a href="/admin/aide/aide.html">Aide</a></dt>
+<dt><a href="/index.php?act=logout&amp;jeton={JETON}">Déconnexion</a></dt>
+</dl></div>
+</div>
+</div><div id="col_main_adm"><form method="post" action="">
+<input type="hidden" name="jeton" value="{JETON}" />
+<h2 align="center">Edition divers</h2><table cellspacing="0" cellpadding="1" border="0" summary="Formulaire">
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Acte divers  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>Code INSEE : </td>
+  <td><input type="text" name="CODCOM" size="12" maxlength="12" value="XA001">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commune : </td>
+  <td><input type="text" name="COMMUNE" size="40" maxlength="40" value="Saint-Ormel">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Code département : </td>
+  <td><input type="text" name="CODDEP" size="10" maxlength="10" value="XA">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Département : </td>
+  <td><input type="text" name="DEPART" size="40" maxlength="40" value="Hautes-Brumes">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Date de l&#039;acte : </td>
+  <td><input type="text" name="DATETXT" size="10" maxlength="10" value="12/01/1758">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Date républicaine : </td>
+  <td><input type="text" name="DREPUB" size="25" maxlength="25" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Sigle du document : </td>
+  <td><input type="text" name="SIGLE" size="5" maxlength="5" value="Test">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Type du document : </td>
+  <td><input type="text" name="LIBELLE" size="50" maxlength="50" value="Testament">  </td> </tr>
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Intervenant 1  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>Nom : </td>
+  <td><input type="text" name="NOM" size="30" maxlength="30" value="D&#039;ARCY">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="PRE" size="35" maxlength="35" value="Jean-Étienne">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Sexe : </td>
+  <td><input type="text" name="SEXE" size="1" maxlength="1" value="M">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Origine : </td>
+  <td><input type="text" name="ORI" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Date de naissance : </td>
+  <td><input type="text" name="DNAIS" size="10" maxlength="10" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Age : </td>
+  <td><input type="text" name="AGE" size="15" maxlength="15" value="77">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Profession : </td>
+  <td><input type="text" name="PRO" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Ex-conjoint : </td>
+  <td><input type="text" name="EXCON" size="50" maxlength="50" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="EXC_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="EXC_COM" size="70" maxlength="70" value="hab. Pontarèze">  </td> </tr>
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Parents  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>Nom du père : </td>
+  <td><input type="text" name="P_NOM" size="30" maxlength="30" value="PELLISSAC">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="P_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="P_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Profession : </td>
+  <td><input type="text" name="P_PRO" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Nom de la mère : </td>
+  <td><input type="text" name="M_NOM" size="30" maxlength="30" value="ABRANEL">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="M_PRE" size="35" maxlength="35" value="Geneviève">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="M_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Profession : </td>
+  <td><input type="text" name="M_PRO" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Intervenant 2  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>Nom : </td>
+  <td><input type="text" name="C_NOM" size="30" maxlength="30" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="C_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Sexe : </td>
+  <td><input type="text" name="C_SEXE" size="1" maxlength="1" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Origine : </td>
+  <td><input type="text" name="C_ORI" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Date de naissance : </td>
+  <td><input type="text" name="C_DNAIS" size="10" maxlength="10" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Age : </td>
+  <td><input type="text" name="C_AGE" size="8" maxlength="8" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="C_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Profession : </td>
+  <td><input type="text" name="C_PRO" size="35" maxlength="35" value="journalier">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Ex-conjoint : </td>
+  <td><input type="text" name="C_EXCON" size="50" maxlength="50" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="C_X_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="C_X_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Parents  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>Nom du père : </td>
+  <td><input type="text" name="CP_NOM" size="30" maxlength="30" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="CP_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="CP_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Profession : </td>
+  <td><input type="text" name="CP_PRO" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Nom de la mère : </td>
+  <td><input type="text" name="CM_NOM" size="30" maxlength="30" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="CM_PRE" size="35" maxlength="35" value="Thérèse">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="CM_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Profession : </td>
+  <td><input type="text" name="CM_PRO" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Témoins  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>Témoin 1 : </td>
+  <td><input type="text" name="T1_NOM" size="30" maxlength="30" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="T1_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="T1_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Témoin 2 : </td>
+  <td><input type="text" name="T2_NOM" size="30" maxlength="30" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="T2_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="T2_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Témoin 3 : </td>
+  <td><input type="text" name="T3_NOM" size="30" maxlength="30" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="T3_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="T3_COM" size="70" maxlength="70" value="hab. Pontarèze">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Témoin 4 : </td>
+  <td><input type="text" name="T4_NOM" size="30" maxlength="30" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Prénom : </td>
+  <td><input type="text" name="T4_PRE" size="35" maxlength="35" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire : </td>
+  <td><input type="text" name="T4_COM" size="70" maxlength="70" value="">  </td> </tr>
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Références  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>Cote : </td>
+  <td><input type="text" name="COTE" size="40" maxlength="40" value="FIC XA/16 vue 87">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Libre : </td>
+  <td><input type="text" name="LIBRE" size="50" maxlength="50" value="N° 1">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Commentaire général : </td>
+  <td><textarea name="COMGEN" cols=70 rows=4>Présence du curé de la paroisse</textarea>  </td> </tr>
+ <tr class="row1">
+  <td align=right>Photos : </td>
+  <td><textarea name="PHOTOS" cols=70 rows=4></textarea>  </td> </tr>
+ <tr class="row0">
+  <td align="left"><b>&nbsp; Crédits  </b></td>
+  <td> </td>
+ </tr> <tr class="row1">
+  <td align=right>ID du déposant : </td>
+  <td><input type="text" name="DEPOSANT" size="10" maxlength="10" value="16">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Photographe : </td>
+  <td><input type="text" name="PHOTOGRA" size="40" maxlength="40" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Transcripteur : </td>
+  <td><input type="text" name="RELEVEUR" size="40" maxlength="40" value="">  </td> </tr>
+ <tr class="row1">
+  <td align=right>Vérificateur : </td>
+  <td><input type="text" name="VERIFIEU" size="40" maxlength="40" value="">  </td> </tr>
+ <tr class="row0"><td>
+<input type="hidden" name="xtyp" value="V" />
+<input type="hidden" name="xid"  value="1" />
+<input type="hidden" name="xconfirm" value="confirmed" />
+<td><input type="submit" value=" >> ENREGISTRER >> " />
+&nbsp; &nbsp; &nbsp; <a href="tab_bans.php?args=Saint-Ormel+%5BHautes-Brumes%5D,D%27ARCY">Annuler</a>
+</td></tr></table>
+</form>
+</div><div id="pied_page2" class="pied_page2"><div id="totop2" class="totop2"><p class="totop2"><strong><a href="#top">Top</a></strong> &nbsp; </p></div><div id="texte_pied2" class="texte_pied2"><p class="texte_pied2"></p></div><div id="copyright2" class="copyright2"><p class="copyright2">Actalibre</p></div></div></body>
+</html>

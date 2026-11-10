@@ -1,0 +1,182 @@
+HTTP 200
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48" />
+<link rel="icon" href="/img/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/img/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/img/favicon-48x48.png" type="image/png" sizes="48x48" />
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180" />
+<link rel="stylesheet" href="/_config/actes.css" type="text/css" />
+<link rel="stylesheet" href="/_config/actes_print.css" type="text/css"  media="print" />
+<link rel="stylesheet" href="/tools/tarteaucitron/css/tarteaucitron.min.css" type="text/css" />
+<script type="text/javascript" src="/tools/tarteaucitron/tarteaucitron.min.js"></script>
+<script type="application/json" id="consentement-reglages">{"message":"Les cookies nous permettent de faciliter la navigation et l\u0027usage du site, de personnaliser le contenu et les annonces et d\u0027analyser notre trafic. L\u0027usage du site implique l\u0027acceptation de ces cookies.","adresse":"https:\/\/www.allaboutcookies.org\/fr\/","position":"top"}</script>
+<script type="text/javascript" src="/tools/js/consentement.js"></script>
+<script language="Javascript 1.2" type="text/javascript">
+function show(id) 
+ { 
+ 	el = document.getElementById(id); 
+ 	if (el.style.display == 'none') 
+ 	{ 
+ 		el.style.display = ''; 
+ 		el = document.getElementById('help' + id); 
+ 	} else { 
+ 		el.style.display = 'none'; 
+ 		el = document.getElementById('help' + id); 
+ 	} 
+ } 
+ </script>
+<title>Paramétrage du logiciel</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="expires" content="never" />
+<meta name="revisit-after" content="15 days" />
+<meta name="robots" content="all, index, follow" />
+<meta name="description" content=" Paramétrage du logiciel" />
+<meta name="keywords" content="généalogie, dépouillement, actes, tables, patronymes, BMS, NMD, commune, paroisse, Paramétrage du logiciel" />
+<meta name="generator" content="ExpoActes" />
+
+</head>
+<body id="gest_params"  >
+<div id="top" class="entete"><div class="bandeau">
+<strong><a href="">Expoactes</a> || </strong>
+D&eacute;pouillement de tables et actes d'&eacute;tat-civil ou de registres paroissiaux
+</div>
+
+</div>
+<div class="navigation">Navigation :: <a href="/index.php">Accueil</a>
+ &gt; <a href="/admin/index.php">Administration</a>
+ &gt; Paramétrage du logiciel
+</div>
+<p class="erreur" role="status">Protection des fichiers privés non vérifiée. Consultez le contrôle des protections. <a href="/admin/protection.php">Contrôle des protections</a></p>
+<div id="col_menu"><div class="menu_zone">
+<div class="menu_titre">Recherche directe</div>
+<form class="form_rech" name="recherche" method="post" action="/chercher.php">
+&nbsp;<input type="text" name="achercher" />
+&nbsp;<input type="submit" name="Submit" value="Chercher" />
+<br /><input type="radio" name="zone" value="1" checked="checked" />Intéressé(e) 
+<br /><input type="radio" name="zone" value="2" />Mère, conjoint, témoins, parrain...
+<br />&nbsp;Dans les actes de&nbsp;
+<select name="typact" size="1">
+<option value="N">Naissances</option>
+<option value="M">Mariages</option>
+<option value="D">Décès</option>
+<option value="V">Actes divers</option>
+ </select>
+<input type="hidden" name="direct" value="1" />
+<input type="hidden" name="debug" value="" />
+<div class="menuTexte" align="right"><dl><dd><a href="/rechavancee.php">Recherche avancée</a>&nbsp; &nbsp;</dd></dl></div></form>
+</div>
+<div class="menu_zone">
+<div class="menu_titre">Administration&nbsp; &nbsp;&lt;fictif_admin&gt;</div>
+<div class="menuCorps"><dl>
+<dt><a href="/admin/index.php">Inventaire des actes</a></dt>
+<dt><a href="/changepw.php">Changer le mot de passe</a></dt>
+<dt><a href="/admin/charge.php">Charger des actes NIMEGUE</a></dt>
+<dt><a href="/admin/chargecsv.php">Charger des actes CSV</a></dt>
+<dt><a href="/admin/supprime.php">Supprimer des actes</a></dt>
+<dt><a href="/admin/exporte.php">Réexporter des actes</a></dt>
+<dt><a href="/admin/maj_sums.php">Administrer les données</a></dt>
+<dt><a href="/admin/listusers.php">Administrer les utilisateurs</a></dt>
+<dt><a href="/admin/gest_params.php">Administrer le logiciel</a></dt>
+<dt><a href="/admin/aide/aide.html">Aide</a></dt>
+<dt><a href="/index.php?act=logout&amp;jeton={JETON}">Déconnexion</a></dt>
+</dl></div>
+</div>
+</div><div id="col_main_adm"><p align="center"><strong>Administration du logiciel : </strong><strong><a href="gest_params.php">Paramétrage</a></strong> | <a href="gest_labels.php">Etiquettes</a> | <a href="serv_params.php">Etat serveur</a> | <a href="gesttraceip.php">Fitrage IP</a> | <a href="gestindex.php">Index</a> | <a href="listlog.php">Journal</a></p><h2>Paramétrage du site "Expoactes"</h2><p align="center"><strong>Paramètres : </strong><strong>Affichage</strong> | <a href="gest_params.php?grp=G%C3%A9oloc">Géoloc</a> | <a href="gest_params.php?grp=Mail">Mail</a> | <a href="gest_params.php?grp=Protection">Protection</a> | <a href="gest_params.php?grp=Recherche">Recherche</a> | <a href="gest_params.php?grp=Syst%C3%A8me">Système</a> | <a href="gest_params.php?grp=Utilisateurs">Utilisateurs</a> || <a href="update_params.php">Backup</a></p><h2 align="center">Affichage</h2><form method="post" action="">
+<input type="hidden" name="jeton" value="{JETON}" />
+<table cellspacing="0" cellpadding="1" border="0" summary="Formulaire">
+ <tr>
+  <td align="right"><b>Nom du site principal</b> <a href="gest_params.php?grp=Affichage" id="help1" onclick="javascript:show('aide1');return false;"><b>(?)</b></a><span id="aide1" style="display: none" class="aide"><br />SITENAME : Nom du site utiliés dans le cartouche de tête et dans les mails automatiques.</span> : </td>
+  <td><input type="hidden" name="parname1"  value="SITENAME" />
+<input type="text" name="parvalue1" size="50" maxlength="250" value="Expoactes" />  </td> </tr>
+ <tr>
+  <td align="right"><b>URL du site principal</b> <a href="gest_params.php?grp=Affichage" id="help2" onclick="javascript:show('aide2');return false;"><b>(?)</b></a><span id="aide2" style="display: none" class="aide"><br />SITE_URL : URL relative ou absolue du site web principal (utilisée pour créer un lien de retour vers le site principal).</span> : </td>
+  <td><input type="hidden" name="parname2"  value="SITE_URL" />
+<input type="text" name="parvalue2" size="50" maxlength="250" value="" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Eléments affichés par page</b> <a href="gest_params.php?grp=Affichage" id="help3" onclick="javascript:show('aide3');return false;"><b>(?)</b></a><span id="aide3" style="display: none" class="aide"><br />MAX_PAGE : Nombre références d'actes affichés par pages dans les recherches</span> : </td>
+  <td><input type="hidden" name="parname3"  value="MAX_PAGE" />
+<input type="text" name="parvalue3" size="5" maxlength="5" value="100" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Eléments par page (mode administration)</b> <a href="gest_params.php?grp=Affichage" id="help4" onclick="javascript:show('aide4');return false;"><b>(?)</b></a><span id="aide4" style="display: none" class="aide"><br />MAX_PAGE_ADM : Nombre références d'actes affichés par pages dans les recherches en mode administration</span> : </td>
+  <td><input type="hidden" name="parname4"  value="MAX_PAGE_ADM" />
+<input type="text" name="parvalue4" size="5" maxlength="5" value="100" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Basculement en mode alphabétique</b> <a href="gest_params.php?grp=Affichage" id="help5" onclick="javascript:show('aide5');return false;"><b>(?)</b></a><span id="aide5" style="display: none" class="aide"><br />MAX_PATR : Nombre de patronymes à partir duquel on passe en mode de regroupement alphabétique ABC..Z</span> : </td>
+  <td><input type="hidden" name="parname5"  value="MAX_PATR" />
+<input type="text" name="parvalue5" size="5" maxlength="5" value="200" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Mode alphabétique (mode administration)</b> <a href="gest_params.php?grp=Affichage" id="help6" onclick="javascript:show('aide6');return false;"><b>(?)</b></a><span id="aide6" style="display: none" class="aide"><br />MAX_PATR_ADM : Nombre de patronymes à partir duquel on passe en mode de regroupement alphabétique ABC..Z (en mode administration)</span> : </td>
+  <td><input type="hidden" name="parname6"  value="MAX_PATR_ADM" />
+<input type="text" name="parvalue6" size="5" maxlength="5" value="200" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Accueil : affichage des dates min. et max.</b> <a href="gest_params.php?grp=Affichage" id="help7" onclick="javascript:show('aide7');return false;"><b>(?)</b></a><span id="aide7" style="display: none" class="aide"><br />SHOW_DATES : Détermine si les dates minimales et maximales des actes d'une commune sont affichées dans la page d'accueil d'Expoactes.</span> : </td>
+  <td><input type="hidden" name="parname7"  value="SHOW_DATES" />
+<input type="checkbox" name="parvalue7" value="1" checked="checked" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Accueil : lien vers la distribution des années</b> <a href="gest_params.php?grp=Affichage" id="help8" onclick="javascript:show('aide8');return false;"><b>(?)</b></a><span id="aide8" style="display: none" class="aide"><br />SHOW_DISTRIBUTION : Détermine si l'icône faisant le lien vers les statistiques des actes par années est présent dans le tableau public. NB : L'affichage de lien nécessite aussi que le paramètre précédent soit activé.</span> : </td>
+  <td><input type="hidden" name="parname8"  value="SHOW_DISTRIBUTION" />
+<input type="checkbox" name="parvalue8" value="1" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Accueil : afficher tous les types d&#039;actes</b> <a href="gest_params.php?grp=Affichage" id="help9" onclick="javascript:show('aide9');return false;"><b>(?)</b></a><span id="aide9" style="display: none" class="aide"><br />SHOW_ALLTYPES : Détermine si la page d'accueil affiche le tableau résumé des quatre types d'actes (par défaut) ou d'un seul.</span> : </td>
+  <td><input type="hidden" name="parname9"  value="SHOW_ALLTYPES" />
+<input type="checkbox" name="parvalue9" value="1" checked="checked" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Tables : affichages des années seulement</b> <a href="gest_params.php?grp=Affichage" id="help10" onclick="javascript:show('aide10');return false;"><b>(?)</b></a><span id="aide10" style="display: none" class="aide"><br />ANNEE_TABLE : L'affichage des tables d'actes présente en principe la date complète des actes. Si vous souhaitez limiter cet affichage à l'année seulement pour les visiteurs non connectés ou les non déposants (niveau=4), il suffit de sélectionner la valeur appropriée.</span> : </td>
+  <td><input type="hidden" name="parname10"  value="ANNEE_TABLE" />
+<select name="parvalue10">
+<option value="0" selected="selected">0 - Toujours date détaillée</option>
+<option value="1">1 - Années si non connecté</option>
+<option value="2">2 - Années si non déposant</option>
+<option value="3">3 - Années dans tous les cas</option>
+ </select>
+  </td> </tr>
+ <tr>
+  <td align="right"><b>Actes : images seulement si login</b> <a href="gest_params.php?grp=Affichage" id="help11" onclick="javascript:show('aide11');return false;"><b>(?)</b></a><span id="aide11" style="display: none" class="aide"><br />JPG_SI_LOGIN : Lorsque cette case est cochée, le lien vers les images d'actes (zone "Libre") n'apparait que lorsque le visiteur est connecté; dans le cas contraire le texte "image privée" est affiché.</span> : </td>
+  <td><input type="hidden" name="parname11"  value="JPG_SI_LOGIN" />
+<input type="checkbox" name="parvalue11" value="1" />  </td> </tr>
+ <tr>
+  <td align="right"><b>Texte d&#039;avertissement</b> <a href="gest_params.php?grp=Affichage" id="help12" onclick="javascript:show('aide12');return false;"><b>(?)</b></a><span id="aide12" style="display: none" class="aide"><br />AVERTISMT : Texte facultatif à afficher en tête de la première page au dessus de l'inventaire des communes.</span> : </td>
+  <td><input type="hidden" name="parname12"  value="AVERTISMT" />
+<textarea name="parvalue12" cols="40" rows="6"></textarea>  </td> </tr>
+ <tr>
+  <td align="right"><b>Pied de page</b> <a href="gest_params.php?grp=Affichage" id="help13" onclick="javascript:show('aide13');return false;"><b>(?)</b></a><span id="aide13" style="display: none" class="aide"><br />PIED_PAGE : Texte libre du pied de page : peut contenir un texte ou un script javascript (pour un compteur de visiteurs par exemple).</span> : </td>
+  <td><input type="hidden" name="parname13"  value="PIED_PAGE" />
+<textarea name="parvalue13" cols="40" rows="6"></textarea>  </td> </tr>
+ <tr>
+  <td align="right"><b>Zone de pub sous le menu</b> <a href="gest_params.php?grp=Affichage" id="help14" onclick="javascript:show('aide14');return false;"><b>(?)</b></a><span id="aide14" style="display: none" class="aide"><br />PUB_ZONE_MENU : Il est possible de faire afficher sous le menu un texte quelconque tels qu'une publicité pour vos activités. Il peut aussi être utilisé pour afficher un cadre de publicités type "Google Adsens". Cette zone doit être complétée par du HTML valide. Le style .pub_menu peut être utilement créé dans la CSS.</span> : </td>
+  <td><input type="hidden" name="parname14"  value="PUB_ZONE_MENU" />
+<textarea name="parvalue14" cols="40" rows="6">Zone info libre</textarea>  </td> </tr>
+ <tr>
+  <td align="right"><b>Message acceptation des cookies</b> <a href="gest_params.php?grp=Affichage" id="help15" onclick="javascript:show('aide15');return false;"><b>(?)</b></a><span id="aide15" style="display: none" class="aide"><br />COOKIE_MESSAGE : Ce message, affiché tous les ans, annonce l'utilisation des cookies sur le site. Vous pouvez personnaliser le message en fonction des services activés (google analytics, publicité, ...)</span> : </td>
+  <td><input type="hidden" name="parname15"  value="COOKIE_MESSAGE" />
+<textarea name="parvalue15" cols="40" rows="6">Les cookies nous permettent de faciliter la navigation et l&#039;usage du site, de personnaliser le contenu et les annonces et d&#039;analyser notre trafic. L&#039;usage du site implique l&#039;acceptation de ces cookies.</textarea>  </td> </tr>
+ <tr>
+  <td align="right"><b>URL d&#039;une page sur les cookies</b> <a href="gest_params.php?grp=Affichage" id="help16" onclick="javascript:show('aide16');return false;"><b>(?)</b></a><span id="aide16" style="display: none" class="aide"><br />COOKIE_URL_INFO : Cette page permet au visiteur d'en savoir plus sur les cookies. Il peut s'agir d'une page interne au site ou externe.</span> : </td>
+  <td><input type="hidden" name="parname16"  value="COOKIE_URL_INFO" />
+<textarea name="parvalue16" cols="40" rows="6">https://www.allaboutcookies.org/fr/</textarea>  </td> </tr>
+ <tr>
+  <td align="right"><b>Style du message cookies</b> <a href="gest_params.php?grp=Affichage" id="help17" onclick="javascript:show('aide17');return false;"><b>(?)</b></a><span id="aide17" style="display: none" class="aide"><br />COOKIE_STYLE : Position du bandeau de consentement : en haut, en bas ou flottant. La variante claire ou foncée n'est plus appliquée.</span> : </td>
+  <td><input type="hidden" name="parname17"  value="COOKIE_STYLE" />
+<select name="parvalue17">
+<option value="1" selected="selected">1 - en haut, foncé</option>
+<option value="2">2 - en haut, clair </option>
+<option value="3">3 - en bas, foncé</option>
+<option value="4">4 - en bas, clair </option>
+<option value="5">5 - flottant, foncé</option>
+<option value="6">6 - flottant, clair</option>
+ </select>
+  </td> </tr>
+ <tr><td align="right">
+<input type="hidden" name="parnbr"  value="17" />
+<input type="hidden" name="grp"  value="Affichage" />
+<input type="hidden" name="xconfirm" value="confirmed" />
+<a href="index.php">Annuler</a> &nbsp; &nbsp;</td>
+<td><input type="submit" value="ENREGISTRER" /></td>
+</tr></table>
+</form>
+</div><div id="pied_page2" class="pied_page2"><div id="totop2" class="totop2"><p class="totop2"><strong><a href="#top">Top</a></strong> &nbsp; </p></div><div id="texte_pied2" class="texte_pied2"><p class="texte_pied2"></p></div><div id="copyright2" class="copyright2"><p class="copyright2">Actalibre</p></div></div></body>
+</html>

@@ -1,0 +1,90 @@
+HTTP 200
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48" />
+<link rel="icon" href="/img/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/img/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/img/favicon-48x48.png" type="image/png" sizes="48x48" />
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180" />
+<link rel="stylesheet" href="/_config/actes.css" type="text/css" />
+<link rel="stylesheet" href="/_config/actes_print.css" type="text/css"  media="print" />
+<link rel="stylesheet" href="/tools/tarteaucitron/css/tarteaucitron.min.css" type="text/css" />
+<script type="text/javascript" src="/tools/tarteaucitron/tarteaucitron.min.js"></script>
+<script type="application/json" id="consentement-reglages">{"message":"Les cookies nous permettent de faciliter la navigation et l\u0027usage du site, de personnaliser le contenu et les annonces et d\u0027analyser notre trafic. L\u0027usage du site implique l\u0027acceptation de ces cookies.","adresse":"https:\/\/www.allaboutcookies.org\/fr\/","position":"top"}</script>
+<script type="text/javascript" src="/tools/js/consentement.js"></script>
+<link rel="alternate" type="application/rss+xml" title="Expoactes : Dépouillement d&#039;actes de l&#039;état-civil et des registres paroissiaux" href="/rss.php" /><title>Expoactes : Dépouillement d&#039;actes de l&#039;état-civil et des registres paroissiaux</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="expires" content="never" />
+<meta name="revisit-after" content="15 days" />
+<meta name="robots" content="all, index, follow" />
+<meta name="description" content=" Expoactes : Dépouillement d&#039;actes de l&#039;état-civil et des registres paroissiaux" />
+<meta name="keywords" content="généalogie, dépouillement, actes, tables, patronymes, BMS, NMD, commune, paroisse, Expoactes : Dépouillement d&#039;actes de l&#039;état-civil et des registres paroissiaux" />
+<meta name="generator" content="ExpoActes" />
+
+<link rel="stylesheet" href="/tools/leaflet/leaflet.css" type="text/css" />
+<link rel="stylesheet" href="/tools/leaflet/MarkerCluster.css" type="text/css" />
+<link rel="stylesheet" href="/tools/leaflet/MarkerCluster.Default.css" type="text/css" />
+<script type="text/javascript" src="/tools/leaflet/leaflet.js"></script>
+<script type="text/javascript" src="/tools/leaflet/leaflet.markercluster.js"></script>
+<script type="text/javascript" src="/tools/js/carte.js"></script>
+
+</head>
+<body id="index"  >
+<div id="top" class="entete"><div class="bandeau">
+<strong><a href="">Expoactes</a> || </strong>
+D&eacute;pouillement de tables et actes d'&eacute;tat-civil ou de registres paroissiaux
+</div>
+
+</div>
+<div class="navigation">Navigation :: Communes et paroisses
+</div>
+<div id="col_menu">
+<div class="menu_zone">
+<div class="menu_titre">Recherche directe</div>
+<form class="form_rech" name="recherche" method="post" action="/chercher.php">
+&nbsp;<input type="text" name="achercher" />
+&nbsp;<input type="submit" name="Submit" value="Chercher" />
+<br /><input type="radio" name="zone" value="1" checked="checked" />Intéressé(e) 
+<br /><input type="radio" name="zone" value="2" />Mère, conjoint, témoins, parrain...
+<br />&nbsp;Dans les actes de&nbsp;
+<select name="typact" size="1">
+<option value="N">Naissances</option>
+<option value="M">Mariages</option>
+<option value="D">Décès</option>
+<option value="V">Actes divers</option>
+ </select>
+<input type="hidden" name="direct" value="1" />
+<input type="hidden" name="debug" value="" />
+<div class="menuTexte" align="right"><dl><dd><a href="/rechavancee.php">Recherche avancée</a>&nbsp; &nbsp;</dd></dl></div></form>
+</div>
+<div class="menu_zone">
+<div class="menu_titre">Statistiques</div>
+<div class="menuTexte"><dl>
+<dt><strong>1.600 actes</strong> dont :</dt>
+<dd>400 Naissances/Baptêmes</dd>
+<dd>400 Mariages</dd>
+<dd>400 Décès/Sépultures</dd>
+<dd>400 Actes divers</dd>
+<dt><a href="/rss.php?type=A" title="Résumé de la base en RSS ()"><img src="/tools/MakeRss/feed-icon-16x16.gif" border="0" alt="Résumé de la base en RSS ()" /></a></dt>
+</dl></div>
+</div>
+<div class="menu_zone">
+<div class="menu_titre">Accès membres</div>
+<div class="menuCorps"><dl>
+<dt><a href="/login.php">Connexion</a></dt>
+<dt><a href="/acces.php">Conditions d'accès</a></dt>
+</dl></div>
+</div>
+<div class="pub_menu">
+Zone info libre</div>
+<div class="certificats">
+<a href="https://validator.w3.org/check?uri=http%3A%2F%2Flocalhost%2Findex.php"><img src="/img/valid-xhtml-10.gif" alt="Site Valide XHTML 1.0" border="0" /></a></div>
+</div><div id="col_main"><h2>Communes et paroisses : Carte | <a href="/index.php?vue=T&amp;xtyp=A">Tableau</a></h2><p><b><a href="/index.php?vue=C&amp;xtyp=N">Naissances/Baptêmes</a> | <a href="/index.php?vue=C&amp;xtyp=M">Mariages</a> | <a href="/index.php?vue=C&amp;xtyp=D">Décès/Sépultures</a> | <a href="/index.php?vue=C&amp;xtyp=V">Actes divers</a> | Tous</b></p><div id="carte" style="width:100%;height:500px"><p>Cette carte est fournie par OpenStreetMap et ne s'affiche qu'avec votre accord.</p><p><button type="button" id="carte-autoriser">Autoriser la carte</button></p></div>
+<script type="application/json" id="carte-donnees">{"marqueurs":[{"lon":2.5,"lat":47.5,"titre":"\u00b0x+# : La Fert\u00e9-Ombreuse [C\u00f4te-Sauvage]","bulle":"\u003Cb\u003ELa Fert\u00e9-Ombreuse [C\u00f4te-Sauvage]\u003C\/b\u003E\u003Cbr \/\u003E\u0026nbsp;\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_naiss.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D\u0022\u003E66 Naissances\/Bapt\u00eames\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_mari.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D\u0022\u003E66 Mariages\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_deces.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D\u0022\u003E66 D\u00e9c\u00e8s\/S\u00e9pultures\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D%3BContrat+de+mariage\u0022\u003E18 Contrat de mariage\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D%3BPublication+de+bans\u0022\u003E14 Publication de bans\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D%3BRecensement\u0022\u003E13 Recensement\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D%3BRegistre+Matricule\u0022\u003E12 Registre Matricule\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=La+Fert%C3%A9-Ombreuse+%5BC%C3%B4te-Sauvage%5D%3BTestament\u0022\u003E9 Testament\u003C\/a\u003E\u003Cbr \/\u003E","icone":"http:\/\/localhost\/img\/pin_4.png"},{"lon":2.5,"lat":47.5,"titre":"\u00b0x+# : Vauclairmont [C\u00f4te-Sauvage]","bulle":"\u003Cb\u003EVauclairmont [C\u00f4te-Sauvage]\u003C\/b\u003E\u003Cbr \/\u003E\u0026nbsp;\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_naiss.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D\u0022\u003E66 Naissances\/Bapt\u00eames\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_mari.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D\u0022\u003E66 Mariages\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_deces.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D\u0022\u003E66 D\u00e9c\u00e8s\/S\u00e9pultures\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D%3BContrat+de+mariage\u0022\u003E14 Contrat de mariage\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D%3BPublication+de+bans\u0022\u003E9 Publication de bans\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D%3BRecensement\u0022\u003E13 Recensement\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D%3BRegistre+Matricule\u0022\u003E19 Registre Matricule\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Vauclairmont+%5BC%C3%B4te-Sauvage%5D%3BTestament\u0022\u003E11 Testament\u003C\/a\u003E\u003Cbr \/\u003E","icone":"http:\/\/localhost\/img\/pin_4.png"},{"lon":2.5,"lat":47.5,"titre":"\u00b0x+# : Montbrisac [Hautes-Brumes]","bulle":"\u003Cb\u003EMontbrisac [Hautes-Brumes]\u003C\/b\u003E\u003Cbr \/\u003E\u0026nbsp;\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_naiss.php?args=Montbrisac+%5BHautes-Brumes%5D\u0022\u003E67 Naissances\/Bapt\u00eames\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_mari.php?args=Montbrisac+%5BHautes-Brumes%5D\u0022\u003E67 Mariages\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_deces.php?args=Montbrisac+%5BHautes-Brumes%5D\u0022\u003E67 D\u00e9c\u00e8s\/S\u00e9pultures\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Montbrisac+%5BHautes-Brumes%5D%3BContrat+de+mariage\u0022\u003E20 Contrat de mariage\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Montbrisac+%5BHautes-Brumes%5D%3BPublication+de+bans\u0022\u003E13 Publication de bans\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Montbrisac+%5BHautes-Brumes%5D%3BRecensement\u0022\u003E11 Recensement\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Montbrisac+%5BHautes-Brumes%5D%3BRegistre+Matricule\u0022\u003E13 Registre Matricule\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Montbrisac+%5BHautes-Brumes%5D%3BTestament\u0022\u003E10 Testament\u003C\/a\u003E\u003Cbr \/\u003E","icone":"http:\/\/localhost\/img\/pin_4.png"},{"lon":2.5,"lat":47.5,"titre":"\u00b0x+# : Saint-Ormel [Hautes-Brumes]","bulle":"\u003Cb\u003ESaint-Ormel [Hautes-Brumes]\u003C\/b\u003E\u003Cbr \/\u003E\u0026nbsp;\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_naiss.php?args=Saint-Ormel+%5BHautes-Brumes%5D\u0022\u003E67 Naissances\/Bapt\u00eames\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_mari.php?args=Saint-Ormel+%5BHautes-Brumes%5D\u0022\u003E67 Mariages\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_deces.php?args=Saint-Ormel+%5BHautes-Brumes%5D\u0022\u003E67 D\u00e9c\u00e8s\/S\u00e9pultures\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Saint-Ormel+%5BHautes-Brumes%5D%3BContrat+de+mariage\u0022\u003E18 Contrat de mariage\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Saint-Ormel+%5BHautes-Brumes%5D%3BPublication+de+bans\u0022\u003E5 Publication de bans\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Saint-Ormel+%5BHautes-Brumes%5D%3BRecensement\u0022\u003E18 Recensement\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Saint-Ormel+%5BHautes-Brumes%5D%3BRegistre+Matricule\u0022\u003E11 Registre Matricule\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Saint-Ormel+%5BHautes-Brumes%5D%3BTestament\u0022\u003E15 Testament\u003C\/a\u003E\u003Cbr \/\u003E","icone":"http:\/\/localhost\/img\/pin_4.png"},{"lon":2.5,"lat":47.5,"titre":"\u00b0x+# : L\u0027Orm\u00e9ane [Val d\u0027Ombre]","bulle":"\u003Cb\u003EL\u0026#039;Orm\u00e9ane [Val d\u0026#039;Ombre]\u003C\/b\u003E\u003Cbr \/\u003E\u0026nbsp;\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_naiss.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D\u0022\u003E67 Naissances\/Bapt\u00eames\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_mari.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D\u0022\u003E67 Mariages\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_deces.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D\u0022\u003E67 D\u00e9c\u00e8s\/S\u00e9pultures\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D%3BContrat+de+mariage\u0022\u003E9 Contrat de mariage\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D%3BPublication+de+bans\u0022\u003E8 Publication de bans\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D%3BRecensement\u0022\u003E14 Recensement\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D%3BRegistre+Matricule\u0022\u003E16 Registre Matricule\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=L%27Orm%C3%A9ane+%5BVal+d%27Ombre%5D%3BTestament\u0022\u003E20 Testament\u003C\/a\u003E\u003Cbr \/\u003E","icone":"http:\/\/localhost\/img\/pin_4.png"},{"lon":2.5,"lat":47.5,"titre":"\u00b0x+# : Pontar\u00e8ze [Val d\u0027Ombre]","bulle":"\u003Cb\u003EPontar\u00e8ze [Val d\u0026#039;Ombre]\u003C\/b\u003E\u003Cbr \/\u003E\u0026nbsp;\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_naiss.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D\u0022\u003E67 Naissances\/Bapt\u00eames\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_mari.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D\u0022\u003E67 Mariages\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_deces.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D\u0022\u003E67 D\u00e9c\u00e8s\/S\u00e9pultures\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D%3BContrat+de+mariage\u0022\u003E9 Contrat de mariage\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D%3BPublication+de+bans\u0022\u003E16 Publication de bans\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D%3BRecensement\u0022\u003E17 Recensement\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D%3BRegistre+Matricule\u0022\u003E13 Registre Matricule\u003C\/a\u003E\u003Cbr \/\u003E\u003Ca href=\u0022\/tab_bans.php?args=Pontar%C3%A8ze+%5BVal+d%27Ombre%5D%3BTestament\u0022\u003E12 Testament\u003C\/a\u003E\u003Cbr \/\u003E","icone":"http:\/\/localhost\/img\/pin_4.png"}],"icone":{"adresse":"http:\/\/localhost\/img\/pin_N.png","x":10,"y":42},"zoom":null,"centre":null,"degroupage":10,"deplacable":false}</script>
+<p>&nbsp;</p><p>La consultation des tables et des actes pr&eacute;sent&eacute;s sur ce site est libre et gratuite.<br />
+Ces donn&eacute;es sont mises &agrave; disposition pour faciliter les recherches des g&eacute;n&eacute;alogistes amateurs.<br />
+Il est interdit de faire un usage commercial de ces donn&eacute;es ou de les redistribuer sur CD ou tout autre support.</p></div><div id="pied_page2" class="pied_page2"><div id="totop2" class="totop2"><p class="totop2"><strong><a href="#top">Top</a></strong> &nbsp; </p></div><div id="texte_pied2" class="texte_pied2"><p class="texte_pied2"></p></div><div id="copyright2" class="copyright2"><p class="copyright2">Actalibre</p></div></div></body>
+</html>

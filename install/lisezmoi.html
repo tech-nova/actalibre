@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="fr-be">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>
+      Installation ExpoActes
+    </title>
+    <meta content="Delacharlerie Andre" name="author">
+<style type="text/css">
+p { font-family: Verdana, sans-serif;
+}
+body { font-family: Verdana, sans-serif;
+font-size: 12px;
+}
+.cadre { border: 1px dashed rgb(255, 153, 102);
+padding: 15px;
+}
+</style>
+  </head>
+  <body>
+
+    <h1>
+      Installation de ExpoActes
+    </h1>
+    Auteur : Andr&eacute; Delacharlerie<br>
+    Mail : andre.delacharlerie@gmail.com<br>
+    <h2>
+      Licence :
+    </h2>
+Copyright (C) : Andr&eacute; Delacharlerie, 2005-2015<br>
+
+    Ce programme est libre ("open source"), vous pouvez le redistribuer et/ou le modifier dans le
+    respect des termes de la Licence Publique G&eacute;n&eacute;rale GPL GNU publi&eacute;e par la
+    Free Software Foundation.<br>
+    Texte officiel de la licence : <a href=
+    "http://www.gnu.org/copyleft/gpl.html">http://www.gnu.org/copyleft/gpl.html</a> &nbsp;ou sa
+    <a href="http://fsffrance.org/gpl/gpl-fr.fr.html">traduction fran&ccedil;aise (non
+    officielle)</a>&nbsp;
+
+<p> <span style="font-weight: bold;">Un logiciel "open source" cela signifie aussi
+  - plus que jamais - que tous les utilisateurs (m&ecirc;me ceux qui n'ont aucune
+  pr&eacute;tention en mati&egrave;re de programmation) sont invit&eacute;s &agrave;
+  collaborer &agrave; l'&eacute;volution du logiciel. N'h&eacute;sitez donc pas
+  &agrave;</span> <span style=
+      "font-weight: bold;">m'adresser vos remarques et suggestions</span><span style=
+      "font-weight: bold;">pour faire profiter l'ensemble de la communaut&eacute;
+  des utilisateurs des am&eacute;liorations que vous avez imagin&eacute;es.&nbsp;</span>
+</p>
+    <p>
+      Pour toute question ou suggestion au sujet du logiciel ExpoActes :
+    </p>
+
+
+<ul>
+  <li>Consulter le <span style="font-weight: bold;">site de support</span> &nbsp;:
+    &nbsp;<a href="http://expoactes.monrezo.be">http://expoactes.monrezo.be<br>
+    </a> </li>
+  <li>Consulter le <strong>Wiki</strong> : <a href="http://sites.google.com/site/expoactes/">http://sites.google.com/site/expoactes/</a><a href="http://expoactes.monrezo.be"><br>
+    </a>  </li>
+  <li>Adressez <span style="font-weight: bold;">vos</span> <span style=
+      "font-weight: bold;">questions sur le groupe</span> : &nbsp;<a href="http://groups.google.be/group/expoactes?hl=fr">http://groups.google.be/group/expoactes?hl=fr</a></li>
+</ul>
+<h2>Installation d’ActaLibre</h2>
+<p>ActaLibre conserve l’origine et les attributions d’ExpoActes. Pour ses instructions actuelles, consulter <a href="../INSTALL.md">INSTALL.md</a> : Apache et PHP ≥ 8.3, extensions indiquées dans composer.json.</p>
+<h3 id="maitre"><a name="maitre"></a>Préparer les fichiers</h3>
+<p>Extraire l’archive ActaLibre complète, y compris ses fichiers cachés, composer.json et inventaire-actalibre.json. Aucun programme d’installation Windows ni Composer n’est requis sur le serveur.</p>
+<h3 id="transfert"><a name="transfert"></a>Transférer le site</h3>
+<p>Transférer les fichiers par FTP dans le dossier choisi. Avant une mise à jour, sauvegarder tous les fichiers et toutes les bases, y compris celle des comptes. Seule la migration depuis ExpoActes 3.2.4 est prise en charge.</p>
+<h3 id="bd"><a name="bd"></a>Installer ou mettre à jour</h3>
+<p>Sur une base vierge, ouvrir <a href="../install.php">install.php</a> et saisir l’adresse complète du site, les accès MySQL et le premier administrateur. Les données initiales sont livrées ; aucune donnée ExpoActes n’est nécessaire. Pour une migration ou une base rattachée, ouvrir <a href="../update.php">update.php</a> avec un compte de niveau 9. Les formulaires permettent de reprendre une interruption.</p>
+<p>La configuration reste dans _config/. Les nouveaux journaux et sauvegardes sont dans tmp/. La migration archive les anciens dossiers _logs et _backup en bloc dans tmp/archive/YYMMDDHHMMSS/, sans bloquer SQL si ce renommage échoue.</p>
+<p>Après installation ou mise à jour, vérifier le contrôle des protections et les fichiers non reconnus. Un contrôle non vérifié affiche un avertissement et se relance depuis l’administration. Les fichiers inconnus sont seulement signalés : les vérifier et retirer manuellement par FTP. Les autres serveurs qu’Apache ne sont pas pris en charge en 1.0.</p>
+<p>Pour personnaliser le site : <a href="../admin/aide/config.html">paramètres</a>. Pour un diagnostic : <a href="../admin/aide/codeserreurs.html">codes d’erreur</a>.</p>
+</body></html>

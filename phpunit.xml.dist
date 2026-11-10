@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         defaultTestSuite="ActaLibre"
+         failOnWarning="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true">
+    <testsuites>
+        <testsuite name="ActaLibre">
+            <directory>tests</directory>
+            <exclude>tests/Distribution/ArchiveParcoursTest.php</exclude>
+            <exclude>tests/GoldenMaster/GoldenMasterTest.php</exclude>
+            <exclude>tests/GoldenMaster/MiseAJourTest.php</exclude>
+            <exclude>tests/GoldenMaster/AdressesParcoursTest.php</exclude>
+            <exclude>tests/GoldenMaster/CarteParcoursTest.php</exclude>
+            <exclude>tests/GoldenMaster/PointsParcoursTest.php</exclude>
+            <exclude>tests/GoldenMaster/FinitionsParcoursTest.php</exclude>
+            <exclude>tests/GoldenMaster/CorrectionsParcoursTest.php</exclude>
+            <exclude>tests/GoldenMaster/GrosFichiersParcoursTest.php</exclude>
+            <exclude>tests/GoldenMaster/InstantaneTest.php</exclude>
+        </testsuite>
+        <testsuite name="distribution">
+            <file>tests/Distribution/ArchiveParcoursTest.php</file>
+        </testsuite>
+        <testsuite name="golden-master">
+            <file>tests/GoldenMaster/InstantaneTest.php</file>
+            <file>tests/GoldenMaster/GoldenMasterTest.php</file>
+            <file>tests/GoldenMaster/MiseAJourTest.php</file>
+            <file>tests/GoldenMaster/AdressesParcoursTest.php</file>
+            <file>tests/GoldenMaster/CarteParcoursTest.php</file>
+            <file>tests/GoldenMaster/PointsParcoursTest.php</file>
+            <file>tests/GoldenMaster/FinitionsParcoursTest.php</file>
+            <file>tests/GoldenMaster/CorrectionsParcoursTest.php</file>
+            <file>tests/GoldenMaster/GrosFichiersParcoursTest.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>

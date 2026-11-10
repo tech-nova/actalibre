@@ -1,0 +1,7 @@
+# Nouveau code : niveau 8, sans baseline.
+parameters:
+    level: 8
+    phpVersion: 80400
+    tmpDir: ../../.phpstan.cache
+    paths:
+        - ../../src

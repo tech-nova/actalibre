@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr-be">
+<head>
+
+  <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+  <title>install_easyphp.html</title>
+
+  <meta content="Delacharlerie Andre" name="author" />
+
+  <link rel="stylesheet" href="../_config/actes.css" type="text/css" />
+
+<style type="text/css">
+p { font-family: Verdana, sans-serif;
+font-size: 12px;
+}
+body { font-family: Verdana, sans-serif;
+font-size: 12px;
+}
+.cadre { border: 1px dashed rgb(255, 153, 102);
+padding: 15px;
+}
+</style>
+</head>
+
+
+
+<body>
+
+<h1>Installer ActaLibre sur un Apache local</h1>
+<p>Cette aide issue d’ExpoActes a été adaptée pour ActaLibre. Utiliser un environnement Apache avec PHP ≥ 8.3 et les extensions figurant dans composer.json, notamment mysqli et mysqlnd. Les autres serveurs ne sont pas pris en charge en 1.0.</p>
+<h3 id="MySQL"><a name="MySQL"></a>Préparer MySQL</h3>
+<p>Créer une base vide et un utilisateur ayant les droits sur cette base. Aucun jeu de données ExpoActes n’est nécessaire.</p>
+<h3 id="web"><a name="web"></a>Placer le site et l’installer</h3>
+<p>Extraire l’archive ActaLibre entière dans un dossier servi par Apache, puis ouvrir <a href="../install.php">install.php</a>. Indiquer son adresse complète, sous-dossier compris. Le fichier de connexion reste dans _config/, les journaux et sauvegardes sont dans tmp/.</p>
+<p>Une installation existante se met à jour par <a href="../update.php">update.php</a>, après sauvegarde. La migration ExpoActes accepte uniquement 3.2.4. Après une interruption, reprendre le formulaire ; un administrateur déjà créé doit s’authentifier.</p>
+<p>Contrôler ensuite les protections et les chemins inconnus dans l’administration. Un avertissement ne déplace aucun fichier et ne bloque pas les écritures SQL. Voir <a href="../INSTALL.md">INSTALL.md</a> et la <a href="../admin/aide/config.html">configuration du site</a>.</p>
+<p>Liens historiques : <a href="https://www.easyphp.org/">EasyPHP</a> et <a href="https://www.wampserver.com/">WampServer</a>. Vérifier leurs versions de PHP et d’Apache avant utilisation.</p>
+</body></html>

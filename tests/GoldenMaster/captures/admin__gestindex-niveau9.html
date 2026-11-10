@@ -1,0 +1,158 @@
+HTTP 200
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48" />
+<link rel="icon" href="/img/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/img/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/img/favicon-48x48.png" type="image/png" sizes="48x48" />
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180" />
+<link rel="stylesheet" href="/_config/actes.css" type="text/css" />
+<link rel="stylesheet" href="/_config/actes_print.css" type="text/css"  media="print" />
+<link rel="stylesheet" href="/tools/tarteaucitron/css/tarteaucitron.min.css" type="text/css" />
+<script type="text/javascript" src="/tools/tarteaucitron/tarteaucitron.min.js"></script>
+<script type="application/json" id="consentement-reglages">{"message":"Les cookies nous permettent de faciliter la navigation et l\u0027usage du site, de personnaliser le contenu et les annonces et d\u0027analyser notre trafic. L\u0027usage du site implique l\u0027acceptation de ces cookies.","adresse":"https:\/\/www.allaboutcookies.org\/fr\/","position":"top"}</script>
+<script type="text/javascript" src="/tools/js/consentement.js"></script>
+<title>Gestion des index</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="expires" content="never" />
+<meta name="revisit-after" content="15 days" />
+<meta name="robots" content="all, index, follow" />
+<meta name="description" content=" Gestion des index" />
+<meta name="keywords" content="généalogie, dépouillement, actes, tables, patronymes, BMS, NMD, commune, paroisse, Gestion des index" />
+<meta name="generator" content="ExpoActes" />
+
+</head>
+<body id="gestindex"  >
+<div id="top" class="entete"><div class="bandeau">
+<strong><a href="">Expoactes</a> || </strong>
+D&eacute;pouillement de tables et actes d'&eacute;tat-civil ou de registres paroissiaux
+</div>
+
+</div>
+<div class="navigation">Navigation :: <a href="/index.php">Accueil</a>
+ &gt; <a href="/admin/index.php">Administration</a>
+ &gt; Gestion des index
+</div>
+<p class="erreur" role="status">Protection des fichiers privés non vérifiée. Consultez le contrôle des protections. <a href="/admin/protection.php">Contrôle des protections</a></p>
+<div id="col_menu"><div class="menu_zone">
+<div class="menu_titre">Recherche directe</div>
+<form class="form_rech" name="recherche" method="post" action="/chercher.php">
+&nbsp;<input type="text" name="achercher" />
+&nbsp;<input type="submit" name="Submit" value="Chercher" />
+<br /><input type="radio" name="zone" value="1" checked="checked" />Intéressé(e) 
+<br /><input type="radio" name="zone" value="2" />Mère, conjoint, témoins, parrain...
+<br />&nbsp;Dans les actes de&nbsp;
+<select name="typact" size="1">
+<option value="N">Naissances</option>
+<option value="M">Mariages</option>
+<option value="D">Décès</option>
+<option value="V">Actes divers</option>
+ </select>
+<input type="hidden" name="direct" value="1" />
+<input type="hidden" name="debug" value="" />
+<div class="menuTexte" align="right"><dl><dd><a href="/rechavancee.php">Recherche avancée</a>&nbsp; &nbsp;</dd></dl></div></form>
+</div>
+<div class="menu_zone">
+<div class="menu_titre">Administration&nbsp; &nbsp;&lt;fictif_admin&gt;</div>
+<div class="menuCorps"><dl>
+<dt><a href="/admin/index.php">Inventaire des actes</a></dt>
+<dt><a href="/changepw.php">Changer le mot de passe</a></dt>
+<dt><a href="/admin/charge.php">Charger des actes NIMEGUE</a></dt>
+<dt><a href="/admin/chargecsv.php">Charger des actes CSV</a></dt>
+<dt><a href="/admin/supprime.php">Supprimer des actes</a></dt>
+<dt><a href="/admin/exporte.php">Réexporter des actes</a></dt>
+<dt><a href="/admin/maj_sums.php">Administrer les données</a></dt>
+<dt><a href="/admin/listusers.php">Administrer les utilisateurs</a></dt>
+<dt><a href="/admin/gest_params.php">Administrer le logiciel</a></dt>
+<dt><a href="/admin/aide/aide.html">Aide</a></dt>
+<dt><a href="/index.php?act=logout&amp;jeton={JETON}">Déconnexion</a></dt>
+</dl></div>
+</div>
+</div><div id="col_main_adm"><p align="center"><strong>Administration du logiciel : </strong><a href="gest_params.php">Paramétrage</a> | <a href="gest_labels.php">Etiquettes</a> | <a href="serv_params.php">Etat serveur</a> | <a href="gesttraceip.php">Fitrage IP</a> | <strong><a href="gestindex.php">Index</a></strong> | <a href="listlog.php">Journal</a></p><h2>Index de la base MySQL</h2><table summary="Liste des index actifs ou à créer"><tr class="rowheader">
+<th>Zone clé</th><th>Cardinalité</th><th>Action possible</th></tr>
+<tr class="rowheader">
+<td colspan="3"><b>Table des  (gm_nai3 : 400 lignes)</b> <a href="?act=ANA&tbl=nai3&jeton={JETON}"><b>Analyser</b></a></td></tr>
+<tr class="row0">
+<td>Date de l'acte</td><td align="right">400</td><td align="center"><a href="?act=DEL&ti=0">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Identifiant Nimegue</td><td align="right">1</td><td align="center"><a href="?act=DEL&ti=1">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Commune et département</td><td align="right">6</td><td align="center"><a href="?act=DEL&ti=2">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme nouveau-né</td><td align="right">40</td><td align="center"><a href="?act=DEL&ti=3">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme du père</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=4">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme de la mère</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=5">Supprimer</a></td></tr>
+<tr class="rowheader">
+<td colspan="3"><b>Table des  (gm_mar3 : 400 lignes)</b> <a href="?act=ANA&tbl=mar3&jeton={JETON}"><b>Analyser</b></a></td></tr>
+<tr class="row0">
+<td>Date de l'acte</td><td align="right">400</td><td align="center"><a href="?act=DEL&ti=6">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Identifiant Nimegue</td><td align="right">1</td><td align="center"><a href="?act=DEL&ti=7">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Commune et département</td><td align="right">6</td><td align="center"><a href="?act=DEL&ti=8">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme époux</td><td align="right">40</td><td align="center"><a href="?act=DEL&ti=9">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme épouse</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=10">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme du père de l'époux</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=11">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme de la mère de l'époux</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=12">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme du père de l'épouse</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=13">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme de la mère de l'épouse</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=14">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Origine de l'époux</td><td align="right">7</td><td align="center"><a href="?act=DEL&ti=15">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Origine de l'épouse</td><td align="right">7</td><td align="center"><a href="?act=DEL&ti=16">Supprimer</a></td></tr>
+<tr class="rowheader">
+<td colspan="3"><b>Table des  (gm_dec3 : 400 lignes)</b> <a href="?act=ANA&tbl=dec3&jeton={JETON}"><b>Analyser</b></a></td></tr>
+<tr class="row1">
+<td>Date de l'acte</td><td align="right">400</td><td align="center"><a href="?act=DEL&ti=17">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Identifiant Nimegue</td><td align="right">1</td><td align="center"><a href="?act=DEL&ti=18">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Commune et département</td><td align="right">6</td><td align="center"><a href="?act=DEL&ti=19">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme du décédé</td><td align="right">40</td><td align="center"><a href="?act=DEL&ti=20">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme du conjoint</td><td align="right">33</td><td align="center"><a href="?act=DEL&ti=21">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme du père</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=22">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme de la mère</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=23">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Origine du décédé</td><td align="right">7</td><td align="center"><a href="?act=DEL&ti=24">Supprimer</a></td></tr>
+<tr class="rowheader">
+<td colspan="3"><b>Table des  (gm_div3 : 400 lignes)</b> <a href="?act=ANA&tbl=div3&jeton={JETON}"><b>Analyser</b></a></td></tr>
+<tr class="row1">
+<td>Date de l'acte</td><td align="right">400</td><td align="center"><a href="?act=DEL&ti=25">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Identifiant Nimegue</td><td align="right">1</td><td align="center"><a href="?act=DEL&ti=26">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Commune et départ. & libellé</td><td align="right">6</td><td align="center"><a href="?act=DEL&ti=27">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme du 1er intervenant</td><td align="right">40</td><td align="center"><a href="?act=DEL&ti=28">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme du 2d intervenant</td><td align="right">31</td><td align="center"><a href="?act=DEL&ti=29">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme du père du 1er it.</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=30">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme de la mère du 1er it.</td><td align="right">36</td><td align="center"><a href="?act=DEL&ti=31">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Patronyme du père du 2d it.</td><td align="right">33</td><td align="center"><a href="?act=DEL&ti=32">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Patronyme de la mère du 2d it.</td><td align="right">33</td><td align="center"><a href="?act=DEL&ti=33">Supprimer</a></td></tr>
+<tr class="row0">
+<td>Origine du 1er intervanant</td><td align="right">7</td><td align="center"><a href="?act=DEL&ti=34">Supprimer</a></td></tr>
+<tr class="row1">
+<td>Origine du 2d intervanant</td><td align="right">7</td><td align="center"><a href="?act=DEL&ti=35">Supprimer</a></td></tr>
+</table>
+</div><div id="pied_page2" class="pied_page2"><div id="totop2" class="totop2"><p class="totop2"><strong><a href="#top">Top</a></strong> &nbsp; </p></div><div id="texte_pied2" class="texte_pied2"><p class="texte_pied2"></p></div><div id="copyright2" class="copyright2"><p class="copyright2">Actalibre</p></div></div></body>
+</html>

@@ -1,0 +1,31 @@
+# Répertoires créés à l'installation à partir des modèles *_init
+# (contiennent identifiants de base de données, sauvegardes et journaux)
+/_config/
+/_backup/
+/_logs/
+
+# Fichiers téléversés : déjà ignorés par admin/.gitignore (/_upload/)
+
+# Éditeurs et système
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Copie installée de .htaccess_init (créée par install.php)
+/.htaccess
+
+# Dépendances de développement (Composer) : jamais déployées
+/vendor/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.phpstan.cache/
+
+# Sorties de diffusion et données privées installées
+/dist/
+/tmp/
+
+# Cache des tests de fabrication Python
+__pycache__/

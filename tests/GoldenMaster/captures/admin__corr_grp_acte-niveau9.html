@@ -1,0 +1,157 @@
+HTTP 200
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48" />
+<link rel="icon" href="/img/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/img/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/img/favicon-48x48.png" type="image/png" sizes="48x48" />
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180" />
+<link rel="stylesheet" href="/_config/actes.css" type="text/css" />
+<link rel="stylesheet" href="/_config/actes_print.css" type="text/css"  media="print" />
+<link rel="stylesheet" href="/tools/tarteaucitron/css/tarteaucitron.min.css" type="text/css" />
+<script type="text/javascript" src="/tools/tarteaucitron/tarteaucitron.min.js"></script>
+<script type="application/json" id="consentement-reglages">{"message":"Les cookies nous permettent de faciliter la navigation et l\u0027usage du site, de personnaliser le contenu et les annonces et d\u0027analyser notre trafic. L\u0027usage du site implique l\u0027acceptation de ces cookies.","adresse":"https:\/\/www.allaboutcookies.org\/fr\/","position":"top"}</script>
+<script type="text/javascript" src="/tools/js/consentement.js"></script>
+<title>Corrections groupées d&#039;actes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="expires" content="never" />
+<meta name="revisit-after" content="15 days" />
+<meta name="robots" content="all, index, follow" />
+<meta name="description" content=" Corrections groupées d&#039;actes" />
+<meta name="keywords" content="généalogie, dépouillement, actes, tables, patronymes, BMS, NMD, commune, paroisse, Corrections groupées d&#039;actes" />
+<meta name="generator" content="ExpoActes" />
+
+</head>
+<body id="corr_grp_acte"  >
+<div id="top" class="entete"><div class="bandeau">
+<strong><a href="">Expoactes</a> || </strong>
+D&eacute;pouillement de tables et actes d'&eacute;tat-civil ou de registres paroissiaux
+</div>
+
+</div>
+<script type="text/javascript" src="../tools/js/listes.js"></script>
+<div class="navigation">Navigation :: <a href="/index.php">Accueil</a>
+ &gt; <a href="/admin/index.php">Administration</a>
+ &gt; Corrections groupées d&#039;actes
+</div>
+<p class="erreur" role="status">Protection des fichiers privés non vérifiée. Consultez le contrôle des protections. <a href="/admin/protection.php">Contrôle des protections</a></p>
+<div id="col_menu"><div class="menu_zone">
+<div class="menu_titre">Recherche directe</div>
+<form class="form_rech" name="recherche" method="post" action="/chercher.php">
+&nbsp;<input type="text" name="achercher" />
+&nbsp;<input type="submit" name="Submit" value="Chercher" />
+<br /><input type="radio" name="zone" value="1" checked="checked" />Intéressé(e) 
+<br /><input type="radio" name="zone" value="2" />Mère, conjoint, témoins, parrain...
+<br />&nbsp;Dans les actes de&nbsp;
+<select name="typact" size="1">
+<option value="N">Naissances</option>
+<option value="M">Mariages</option>
+<option value="D">Décès</option>
+<option value="V">Actes divers</option>
+ </select>
+<input type="hidden" name="direct" value="1" />
+<input type="hidden" name="debug" value="" />
+<div class="menuTexte" align="right"><dl><dd><a href="/rechavancee.php">Recherche avancée</a>&nbsp; &nbsp;</dd></dl></div></form>
+</div>
+<div class="menu_zone">
+<div class="menu_titre">Administration&nbsp; &nbsp;&lt;fictif_admin&gt;</div>
+<div class="menuCorps"><dl>
+<dt><a href="/admin/index.php">Inventaire des actes</a></dt>
+<dt><a href="/changepw.php">Changer le mot de passe</a></dt>
+<dt><a href="/admin/charge.php">Charger des actes NIMEGUE</a></dt>
+<dt><a href="/admin/chargecsv.php">Charger des actes CSV</a></dt>
+<dt><a href="/admin/supprime.php">Supprimer des actes</a></dt>
+<dt><a href="/admin/exporte.php">Réexporter des actes</a></dt>
+<dt><a href="/admin/maj_sums.php">Administrer les données</a></dt>
+<dt><a href="/admin/listusers.php">Administrer les utilisateurs</a></dt>
+<dt><a href="/admin/gest_params.php">Administrer le logiciel</a></dt>
+<dt><a href="/admin/aide/aide.html">Aide</a></dt>
+<dt><a href="/index.php?act=logout&amp;jeton={JETON}">Déconnexion</a></dt>
+</dl></div>
+</div>
+</div><div id="col_main_adm"><p align="center"><strong>Administration des données : </strong><a href="maj_sums.php">Statistiques</a> | <a href="listgeolocs.php">Localités</a> | <a href="ajout_1acte.php">Ajout d'un acte</a> | <strong><a href="corr_grp_acte.php">Corrections groupées</a></strong> | <a href="exporte.php?Destin=B">Backup</a> | <a href="charge.php?Origine=B">Restauration</a></p><form method="post" action="">
+<input type="hidden" name="jeton" value="{JETON}" />
+<h2 align="center">Corrections groupées d'actes</h2><table align="center" cellspacing="0" cellpadding="1" border="0" summary="Formulaire">
+ <tr><td colspan="2"><h3>Actes concernés</h3></td></tr>
+ <tr>
+  <td align="right">Type des actes : &nbsp;</td>
+  <td>  			<input type="hidden" name="TypeActes" value="X" />        <input type="radio" name="TypeActes" value="N"  data-liste-cible="ComDep" data-liste-attente="prl" />Naissances<br />        <input type="radio" name="TypeActes" value="M"  data-liste-cible="ComDep" data-liste-attente="prl" />Mariages<br />        <input type="radio" name="TypeActes" value="D"  data-liste-cible="ComDep" data-liste-attente="prl" />Décès<br />        <input type="radio" name="TypeActes" value="V"  data-liste-cible="ComDep" data-liste-attente="prl" />Actes divers : &nbsp;<select name="typdivers">
+<option>*** Tous ***</option>
+<option value="Contrat de mariage">Contrat de mariage</option>
+<option value="Publication de bans">Publication de bans</option>
+<option value="Recensement">Recensement</option>
+<option value="Registre Matricule">Registre Matricule</option>
+<option value="Testament">Testament</option>
+ </select>
+        <br />&nbsp;<br />  </td> </tr>
+ <tr>
+  <td align="right">Commune / Paroisse : &nbsp;</td>
+  <td>  <select id="ComDep" name="ComDep">    <option value="">Choisir d'abord le type d'acte</option>   </select><img id="prl" src="../img/minispinner.gif" style="visibility:hidden;">  </td> </tr>
+ <tr>
+  <td align="right">Déposant : </td>
+  <td><select name="olddepos">
+<option value="0" selected="selected"> *** Tous *** </option>
+<option value="19">FICTIF Admin</option>
+<option value="16">FICTIF Depot</option>
+<option value="1">FICTIF Installation</option>
+ </select>
+  </td> </tr>
+ <tr>
+  <td align="right">Années : </td>
+  <td>&nbsp;        de <input type="text" name="AnneeDeb" size="4" maxlength="4"/>         à  <input type="text" name="AnneeFin" size="4" maxlength="4"/> (ces années comprises)  </td> </tr>
+ <tr><td><h3>Modifications souhaitées</h3></td><td>(Ne compléter que la/les zone(s) à modifier)</td></tr>
+ <tr>
+  <td align="right">Commune/Paroisse : </td>
+  <td><input type="text" size="40" name="newcom" /></td>
+ </tr>
+ <tr>
+  <td align="right">Code Commune/Paroisse : </td>
+  <td><input type="text" size="12" name="newcodcom" /></td>
+ </tr>
+ <tr>
+  <td align="right">Département/Province : </td>
+  <td><input type="text" size="40" name="newdep" /></td>
+ </tr>
+ <tr>
+  <td align="right">Code Département/Province : </td>
+  <td><input type="text" size="10" name="newcoddep" /></td>
+ </tr>
+ <tr>
+  <td align="right">Déposant : </td>
+  <td><select name="newdepos">
+<option value="0" selected="selected"> -- Inchangé(s) --</option>
+<option value="19">FICTIF Admin</option>
+<option value="16">FICTIF Depot</option>
+<option value="1">FICTIF Installation</option>
+ </select>
+  </td> </tr>
+ <tr>
+  <td align="right">Photographe : </td>
+  <td><input type="text" size="40" name="newphoto" />  </td>
+ </tr>
+ <tr>
+ <tr>
+  <td align="right">Transcripteur : </td>
+  <td><input type="text" size="40" name="newtrans" />  </td>
+ </tr>
+ <tr>
+ <tr>
+  <td align="right">Vérificateur : </td>
+  <td><input type="text" size="40" name="newverif" />  </td>
+ </tr>
+ <tr>
+ <tr>
+  <td align="right">Actes divers : </td>
+  <td>&nbsp;    Sigle : <input type="text" name="newsigle" size="5" maxlength="5"/>     = Libellé : <input type="text" name="newlibel" size="25" maxlength="50"/>  </td> </tr>
+ <tr><td colspan="2">&nbsp;</td></tr>
+ <tr><td colspan="2">&nbsp;</td></tr>
+ <tr><td>
+  <input type="hidden" name="action" value="submitted" />  <input type="reset" value="Annuler" />
+</td><td><input type="submit" value=" >> ENREGISTRER >> " />
+</td></tr></table>
+</form>
+</div><div id="pied_page2" class="pied_page2"><div id="totop2" class="totop2"><p class="totop2"><strong><a href="#top">Top</a></strong> &nbsp; </p></div><div id="texte_pied2" class="texte_pied2"><p class="texte_pied2"></p></div><div id="copyright2" class="copyright2"><p class="copyright2">Actalibre</p></div></div></body>
+</html>

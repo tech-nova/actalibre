@@ -1,0 +1,20 @@
+# ActaLibre : informations serveur jamais servies directement (défense en profondeur)
+<Files "p_info.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+<FilesMatch "\.(sql|xml|txt|md|csv|rtf|inc\.php)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

@@ -1,0 +1,358 @@
+<?php
+$dbname ??= null; $mes_variables_sql ??= null; $row ??= null;
+if (basename($_SERVER['SCRIPT_NAME'] ?? '') === basename(__FILE__)) {
+	http_response_code(403);
+	exit;
+}
+// VERSION 5 : 03/01/2022
+
+$MODE_DEBUG = true; // N'applique pas les mises à jour & affiche les information DEBUG de la fin et des requêtes
+$MODE_DEBUG = false; // Production
+
+function init_page_EL_GENERALE($head="", $ajax="", $affiche = '') // SOURCE DE exporte.php
+  {
+  global $root,$userlevel,$htmlpage,$titre;
+
+  open_page($titre,$root,null,null,$head);
+	navadmin($root,$titre);
+
+	echo '<div id="col_menu">';
+	form_recherche();
+	menu_admin($root,$userlevel);
+	echo '</div>';
+
+	echo '<div id="col_main_adm">';
+	$htmlpage = true;
+	my_flush();
+  }
+
+function get_collation_infos_table($table)
+{
+	global $dbname;
+	$requete = "SELECT T.TABLE_COLLATION,CCSA.COLLATION_NAME, CCSA.character_set_name  FROM information_schema.`TABLES` T,
+		information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` CCSA WHERE CCSA.collation_name = T.table_collation
+		AND T.table_schema = '" . $dbname . "'  AND T.table_name = '" . $table . "'";
+	if ($GLOBALS['MODE_DEBUG']) echo 'Multibase infos table ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+	$result = EA_sql_query($requete);
+	if ($row = EA_sql_fetch_assoc($result)) { // MULTIBASE mais pas chez FREE !
+		$TAB_character_set_name = $row['character_set_name'];
+		$TAB_collation_name = $row['TABLE_COLLATION'];
+	} else { // MONOBASE
+		$requete = "SHOW TABLE STATUS FROM " . $dbname . " LIKE '" . $table . "';";
+		if ($GLOBALS['MODE_DEBUG']) echo 'Monobase infos collation table  ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+		$result = EA_sql_query($requete);
+		$row = EA_sql_fetch_assoc($result);
+		$TAB_collation_name = $row['Collation'];
+		// POUR PRECISER LA BASE :  "use ".$dbname.";" .   NE FONCTIONNE PAS CHEZ FREE
+		$requete = "SELECT CHARACTER_SET_NAME FROM information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` WHERE collation_name = '" .  $TAB_collation_name . "';";
+		if ($GLOBALS['MODE_DEBUG']) echo 'Monobase infos character table ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+		$result = EA_sql_query($requete);
+		$row = EA_sql_fetch_assoc($result);
+		$TAB_character_set_name = $row['CHARACTER_SET_NAME'];
+	}
+	return [$TAB_character_set_name, $TAB_collation_name ];
+}
+
+function check_collation($mes_variables_divers, $Trt_accents = 'N')
+{
+	global $table_control, $dbname, $tables;
+
+	// PARTIE MISE A JOUR
+    $Total_etapes = getparam('nbope');
+	$Trt_accents = 'N';  $Trt_accents = 'O'; // VALIDE LES OPERATIONS SINON RIEN ??
+	$action = '';
+    $affiche_accents_OK = '';
+	if ($Trt_accents == 'O') $action = getparam('accents');
+	if ($action <> '')
+	{		///// CAS MODIF
+		$operation = 'Demande de positionner la recherche ';
+		switch ($action)
+		{
+		case 'SET':
+			$operation .= 'SENSIBLE AUX ACCENTS';
+			$new_collation = 'latin1_general_ci';
+			break;
+		case 'UNSET':
+			$operation .= 'INSENSIBLE AUX ACCENTS';
+			$new_collation = 'latin1_swedish_ci';
+			break;
+		default :
+			echo 'LLLLLLLLLLLLLLLLL';
+		    exit;
+	    };
+	$time_start = microtime_float();
+	// $autoload = "Y"; $autorise_autoload=true;  // Autorise le rechargement automatisé
+	$delaireload = 2;
+	$num = getparam('num');
+	if ($num == '') $num = 0; // donc $num=0;  au départ
+	$max_num = count($tables);
+	$affiche = '';
+
+    for ($i = $num; $i < $max_num; $i++)
+    {
+	    $value = $tables[$i];
+        //  POUR EVITER DU TRAVAIL INUTILE
+		[$t['character_set_name'], $t['TABLE_COLLATION']] = get_collation_infos_table($value);
+		$v = $t['TABLE_COLLATION'];
+
+		if ($v == $new_collation) continue;
+		$Total_etapes--;
+		$reloadurl = $_SERVER['PHP_SELF'].'?accents='.$action.'&num='.(int)$i.'&'.\ActaLibre\Securite\Jeton::lien();
+
+		$affiche .= 'Traitement de la table : '.\ActaLibre\Securite\Filtre::stocke($value).' : '.\ActaLibre\Securite\Filtre::stocke($v).'<br>';
+		$affiche .= '<div id="topmsg"><p>'.$operation.' en cours de traitement ... <b>!! NE PAS INTERROMPRE !!</b></p><p align="center"><img src="../img/spinner.gif"></p></div>';
+		$affiche .= '<p>'."Patienter l'opération est très longue : ".(1+$i).' sur '.$max_num.", <a href=\"".\ActaLibre\Securite\Filtre::html($reloadurl)."\">relancer</a> en cas de blocage qui semble trop long.</p>";
+
+		$AUTOMATIQUE = true; $AUTOMATIQUE = false; // LE CAS AUTOMATIQUE (AUTOREFRESH) NE FONCTIONNE PAS
+
+		$refresh_automate = getparam('autorefresh');
+		if ( ($refresh_automate == '') and $AUTOMATIQUE )
+		{
+			$reloadurl .= '&autorefresh=go';
+		}
+		else
+		{
+			$r = true;
+			if ($GLOBALS['MODE_DEBUG']) $v = $new_collation; // INHIBE EN MODE DEBUG
+			if ($v != $new_collation)
+			{
+				$requete = "ALTER TABLE `".$value."` CONVERT TO CHARACTER SET latin1 COLLATE ".$new_collation.";";
+				if ($GLOBALS['MODE_DEBUG']) echo 'Changement collation ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+				$r = EA_sql_query($requete);   //      si OK $i++ et  refresh avec param $i;
+			}
+			if (! $r ) {
+				erreur_sql($requete); $Total_etapes++;
+				exit;
+			}
+			else
+			{
+				$i++;
+			}
+			$reloadurl = $_SERVER['PHP_SELF'].'?accents='.$action.'&num='.(int)$i.'&'.\ActaLibre\Securite\Jeton::lien(); // $reloadurl.='&autorefresh=go';  A VOIR
+			$reloadurl .= '&nbope='.$Total_etapes;
+		};
+
+		if (! $AUTOMATIQUE) {
+			$time_end = microtime(true); $time = $time_end - $time_start;
+			$affiche_accents_OK = '<font color="#FF0000"><b>Fin traitement de la table : ' . \ActaLibre\Securite\Filtre::stocke($value)  . '&nbsp; &nbsp; <a href="'.\ActaLibre\Securite\Filtre::html($reloadurl).'"> Continuer ... </a>' . ' (étapes restantes : ' . (int)$Total_etapes .') </b></font>';
+			return [0, $affiche_accents_OK, false];
+		} else {
+			// $pageinited = false;
+			$metahead = '<META HTTP-EQUIV="Refresh" CONTENT="' . $delaireload . '; URL=' . \ActaLibre\Securite\Filtre::html($reloadurl) . '">';
+			init_page_EL_GENERALE($metahead, null, $affiche);
+			exit;
+			return; // DANS LE CAS DU REFRESH ON N'AFFICHE PAS LA SUITE
+		}
+
+    } // FIN de boucle sur les tables
+
+	$Collation_nb_diff = 0;
+    $affiche_accents_OK = ''; // $affiche_accents_OK .= $affiche;
+
+	echo '<br>'; //echo 'TERMINÉ<br><br>';
+
+	}
+	// FIN PARTIE MISE A JOUR
+
+    // PARTIE  CONTROLE
+	$Collation_ref = $mes_variables_divers['actuel_collation_tables'];
+
+	$Collation_nb_diff = 0;
+	$affiche = '';
+
+	foreach ($tables as $num => $value)
+	{
+		[$t['character_set_name'], $t['TABLE_COLLATION']] = get_collation_infos_table($value);
+		$v = $t['TABLE_COLLATION'];
+
+		if ($Collation_ref != $v)
+ 	    {
+			$Collation_nb_diff++;
+
+			$affiche .= 'La table '.\ActaLibre\Securite\Filtre::stocke($value).' est codée (caractères/Collation) : <b>'.\ActaLibre\Securite\Filtre::stocke($t['character_set_name'].' / '.$t['TABLE_COLLATION']).'</b><br>';
+			$affiche .= 'Pour aligner : '. \ActaLibre\Securite\Filtre::stocke("ALTER TABLE `" . $value . "` CONVERT TO CHARACTER SET latin1 COLLATE " . $Collation_ref) . '<br>';
+			$affiche .= '<br>';
+  	    }
+    }
+	if ($Collation_nb_diff != 0) {
+		$affiche_accents_OK = '<br><br>' . $affiche;
+	}
+	// FIN PARTIE  CONTROLE
+
+    return [$Collation_nb_diff, $affiche_accents_OK, true];
+} // FIN check_collation
+// ==========================
+// ==========================
+// ==========================
+// ==========================
+
+$LOCAL_EA_MAINTENANCE = $row[0]; // Récupère l'information MAINTENANCE du script parents
+
+$GLOBALS['Type_Table'] = ['N' => EA_DB . '_nai3','M' => EA_DB . '_mar3','D' => EA_DB . '_dec3','V' => EA_DB . '_div3' ];
+$affiche_debug = 'TEST';
+
+// $table_control = $GLOBALS['Type_Table']['V']; $champ_control = 'BIDON';
+$table_control = EA_DB.'_traceip';
+$champ_control = 'ip';
+$mes_variables_divers = [];
+
+    $tables = [
+	 $GLOBALS['Type_Table']['V'],$GLOBALS['Type_Table']['M'],$GLOBALS['Type_Table']['D'],$GLOBALS['Type_Table']['N'],
+     EA_DB.'_geoloc',EA_DB.'_log',EA_DB.'_metadb',EA_DB.'_metalg',EA_DB.'_mgrplg',EA_DB.'_prenom',EA_DB.'_sums',EA_DB.'_params',EA_DB.'_traceip',EA_UDB.'_user3',
+     $table_control
+	 ];
+
+
+// CONTROLE INDEX DES TABLES
+echo '<h3>Contrôle les index des tables</h3>';
+	$defaut_index = false;
+	$tableau_cle =[
+	'N' => ['COM_DEP', 'IDNIM', 'LADATE', 'M_NOM', 'NOM', 'P_NOM'] ,
+	'M' => ['CM_NOM', 'COM_DEP', 'CP_NOM', 'C_NOM', 'C_ORI', 'IDNIM', 'LADATE', 'M_NOM', 'NOM', 'ORI', 'P_NOM'] ,
+	'D' => ['COM_DEP', 'C_NOM', 'IDNIM', 'LADATE', 'M_NOM', 'NOM', 'ORI', 'P_NOM'] ,
+	'V' => ['CM_NOM', 'COM_DEP_LIB', 'CP_NOM', 'C_NOM', 'C_ORI', 'IDNIM', 'LADATE', 'M_NOM', 'NOM', 'ORI', 'PHOTOS', 'P_NOM'] ,
+	];
+	foreach ( $GLOBALS['Type_Table'] as $k => $v)
+		{
+		$t = [];
+		$requete = "SHOW INDEX FROM `" . $v . "` FROM `" . $dbname . "` ";
+		if ($result = EA_sql_query($requete) )
+			{
+			$row = EA_sql_fetch_assoc($result);
+			while ($row = EA_sql_fetch_assoc($result))
+				{
+				$t [ $row['Key_name'] ] = $row['Key_name'];	
+				if ($row['Comment'] == 'disabled' )
+					{ // Faire : "ALTER TABLE latable ENABLE KEYS"
+					$defaut_index = true;
+					echo '<p><font color="#FF0000"><b>La table ' . \ActaLibre\Securite\Filtre::stocke($v) . ' n\'a plus l\'index '. \ActaLibre\Securite\Filtre::stocke($row['Key_name']) .' actif, des lenteurs sont probables.</b></font></p>';
+					}
+				}
+			sort($t);
+			if ($tableau_cle[$k] != $t)
+				{ // Faire : "ALTER TABLE latable ADD INDEX `nom_index` (`ref_colonne`)" (voir la création des tables install/creetables.sql)
+				$td = array_diff($tableau_cle[$k], $t);
+				foreach ($td as $j => $w)
+					{
+					$defaut_index = true;
+					echo '<p><font color="#FF0000"><b>La table ' . \ActaLibre\Securite\Filtre::stocke($v) . ' n\'a plus l\'index ' . \ActaLibre\Securite\Filtre::stocke($w) . ', des lenteurs sont probables.</b></font></p>';
+					}
+				}
+			} else { // Là c'est grave, il faut recréer tous les index, voir la création des tables install/creetables.sql
+			$defaut_index = true;
+			echo '<p><font color="#FF0000"><b>La table ' . \ActaLibre\Securite\Filtre::stocke($v) . ' n\'a plus aucun index, de graves dysfonctionnements sont probables.</b></font></p>';
+			}
+		}
+	if ($defaut_index) 
+		{
+		echo '<p><font color="#FF0000"><b>Si vous ne savez pas résoudre les problèmes sur les index, demandez de l\'aide.</b></font></p>';
+		} else {
+		echo '<p>Pas de problème détecté sur les index.</p>';
+		}
+
+echo '<h3>Paramètres de codage des tables</h3>';
+
+//DONNEES
+    $requete = "SHOW FULL COLUMNS FROM `" . $table_control . "` FROM `" . $dbname . "` WHERE `Field`= '" . $champ_control . "';";
+	if ($GLOBALS['MODE_DEBUG']) echo 'Collation données ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+	$result = EA_sql_query($requete);
+	$row = EA_sql_fetch_assoc($result);
+    $mes_variables_divers['actuel_collation_donnees'] = $row['Collation'];
+
+// SQL : Que pour la session
+	$requete = "SHOW SESSION VARIABLES WHERE Variable_Name LIKE "."'character_set%'"." or Variable_Name LIKE "."'collation%'";
+	if ($GLOBALS['MODE_DEBUG']) echo 'Variables SQL ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+	$result = EA_sql_query($requete);
+	while ($row = EA_sql_fetch_assoc($result))
+	{
+		$mes_variables_sql[$row['Variable_name']] = $row['Value'];
+	}
+
+// BASE DE DONNEES
+	$requete = "SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" . $dbname . "';";
+	if ($GLOBALS['MODE_DEBUG']) echo 'Multibase infos BD ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+	$result = EA_sql_query($requete);
+	if ($row = EA_sql_fetch_assoc($result)) { // MULTIBASE mais pas chez FREE !
+		$Multibase = true;
+		$mes_variables_divers['actuel_character_set_database'] = $row['DEFAULT_CHARACTER_SET_NAME'];
+		$mes_variables_divers['actuel_collation_database'] = $row['DEFAULT_COLLATION_NAME'];
+    } else { // MONOBASE 
+		$Multibase = false;
+		$requete = "SELECT @@character_set_database AS L_DEF_CHARACTER_SET_NAME, @@collation_database AS L_DEF_COLLATION_NAME;";  
+		if ($GLOBALS['MODE_DEBUG']) echo 'Monobase infos BD ' . \ActaLibre\Securite\Filtre::stocke($requete) . '<br>';
+		$result = EA_sql_query($requete);
+		$row = EA_sql_fetch_assoc($result); // show variables like "character_set_database";
+		$mes_variables_divers['actuel_character_set_database'] = $row['L_DEF_CHARACTER_SET_NAME'];// $mes_variables_sql['character_set_database'];
+		$mes_variables_divers['actuel_collation_database'] = $row['L_DEF_COLLATION_NAME'];// $mes_variables_sql['collation_database'];
+	}
+
+// TABLES
+	[$mes_variables_divers['actuel_character_set_tables'], $mes_variables_divers['actuel_collation_tables']] = get_collation_infos_table($table_control);
+
+my_flush(); // Affichage avant opérations ALTER
+
+[$Collation_differentes, $affiche_accents_OK, $fin_maj] = check_collation($mes_variables_divers);
+
+if ($Collation_differentes != 0)
+{
+   if ($LOCAL_EA_MAINTENANCE) { $x = ' Site en maintenance'; } // INHIBE L'AFFICHAGE DE LA BASCULE MAINTENANCE
+   else  $x = '  Mettre le site en maintenance pour pouvoir régler le problème';
+   echo '<font color="#FF0000"><b>ATTENTION : Anomalie dans le définition du codage des tables, cela peut engendrer des comportements imprévus !<br>' . $x . '.</b></font>';
+}
+echo $affiche_accents_OK;
+my_flush();
+
+if ( (getparam('accents') == '') or ( $fin_maj ) )
+{
+	echo '<p>';
+	switch ($mes_variables_divers['actuel_collation_donnees'])
+	{
+		case 'latin1_swedish_ci':
+			$t = ['v_actuel' => 'UNSET', 't_actuel' => 'INSENSIBLES (ne distinguent pas)', 'v_change' => 'SET', 't_change' => 'SENSIBLES (distinguent)',]; 
+ 	       break;
+		case 'latin1_general_ci':
+		default :
+			$t = ['v_actuel' => 'SET', 't_actuel' => 'SENSIBLES (distinguent)', 'v_change' => 'UNSET', 't_change' => 'INSENSIBLES (ne distinguent pas)',]; 
+ 	       break;
+	}
+    if (! in_array($mes_variables_divers['actuel_collation_donnees'], ['latin1_swedish_ci','latin1_general_ci'] ) )
+   	     echo '<font color="#FF0000"><b>ATTENTION : Codage de table inconnu, cela peut engendrer des comportements imprévus !.</b></font>';
+	else {
+		echo 'Les recherches sont ' . $t['t_actuel'] . ' aux accents.';
+		if (! $LOCAL_EA_MAINTENANCE) {
+			echo ' (changement possible en mode maintenance)';
+		} else {
+			if ($Collation_differentes != 0)
+			{
+				echo '&nbsp; &nbsp;<a href="?nbope=' . $Collation_differentes . '&amp;accents=' . $t['v_actuel'] . '&amp;' . \ActaLibre\Securite\Jeton::lien() . '"><b>Corriger les erreurs de codage</b></a> (nombre d\'étapes : ' . ( $Collation_differentes ) . ')<br><br>';
+			}
+			if ($affiche_debug != "")
+			{
+				$nb_change = ( count($tables) -  $Collation_differentes );
+				//echo '&nbsp; &nbsp;<a href="?nbope=' . $nb_change . '&amp;accents=' . $t['v_change'] . '"><b>Modifier pour rendre les recherches ' . $t['t_change'] . ' aux ACCENTS</b></a>' . '&nbsp; (nombre d\'étapes : ' . $nb_change . ')<br>';
+				echo '&nbsp; &nbsp;<a href="?nbope=' . $nb_change . '&amp;accents=' . $t['v_change'] . '&amp;' . \ActaLibre\Securite\Jeton::lien() . '"><b>Pour changer le comportement lors des recherches</b></a>' . '&nbsp; <font color="#FF0000">(Attention bien faire toutes les étapes : ' . $nb_change . ')</font><br>';
+			}
+		}
+	}
+	echo '</p>';
+}
+
+
+// DEBUG AJOUTER  SUR LA LIGNE   &DEBUG=O
+if ( ( getparam('DEBUG') == 'O') or ($MODE_DEBUG) )
+{
+	echo '<br><br>INFORMATIONS A FOURNIR POUR AIDE : (' . ($Multibase ? "Multibase" : "Monobase") . ')<br>';
+	echo '========================';
+	echo "<p>Encodage du système/fichiers système : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['character_set_system']) . ' / ' . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['character_set_filesystem']) . "</p>";
+	echo "<p>Encodage/Interclassement du serveur : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['character_set_server']) . ' / ' . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['collation_server']) . "</p>";
+	echo "<p>Encodage/Interclassement par défaut des BD : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['character_set_database']).' / ' . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['collation_database'])."</p>";
+	echo "<p>Encodage/Interclassement de cette BD et par défaut de ses tables : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_divers['actuel_character_set_database']) . ' / ' . \ActaLibre\Securite\Filtre::stocke($mes_variables_divers['actuel_collation_database']) . "</p>";
+ 	echo "<p>Encodage/Interclassement de la table de référence de cette BD (".\ActaLibre\Securite\Filtre::stocke($table_control).") et par défaut de ses données : ".\ActaLibre\Securite\Filtre::stocke($mes_variables_divers['actuel_character_set_tables']) . ' / ' . \ActaLibre\Securite\Filtre::stocke($mes_variables_divers['actuel_collation_tables']) . "</p>";
+	echo "<p>Interclassement pour la référence donnée-table de cette BD : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_divers['actuel_collation_donnees']) . "</p>";
+    echo '<br>';
+	echo "<p>Encodage/Interclassement de connexion : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['character_set_connection']) . ' / ' . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['collation_connection']) . "</p>";
+	echo "<p>Encodage du client : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['character_set_client']) . "</p>";
+	echo "<p>Encodage des résultats : " . \ActaLibre\Securite\Filtre::stocke($mes_variables_sql['character_set_results']) . "</p>";
+	echo '========================<br>';
+}
+

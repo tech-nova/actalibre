@@ -1,0 +1,28 @@
+# Code existant : niveau 1, sans baseline.
+parameters:
+    level: 1
+    phpVersion: 80400
+    tmpDir: ../../.phpstan.cache
+    reportUnmatchedIgnoredErrors: true
+    paths:
+        - ../..
+    scanFiles:
+        - constantes.php
+    excludePaths:
+        analyse:
+            - ../../.git (?)
+            - ../../.phpstan.cache (?)
+            - ../../.phpunit.cache (?)
+            - ../../_backup (?)
+            - ../../_config (?)
+            - ../../_config_init
+            - ../../_logs (?)
+            - ../../docs (?)
+            - ../../src
+            - ../../tests
+            - ../../vendor
+            - ../../tools/MakeRss
+            - ../../tools/adodb-time.inc.php
+    ignoreErrors:
+        # Chemins relatifs au dossier d'appel (racine, admin/ ou install/) : PHPStan ne sait pas les résoudre.
+        - identifier: include.fileNotFound

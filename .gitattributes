@@ -1,0 +1,6 @@
+tests/Donnees/*.bea -text
+tests/Donnees/*.csv -text
+tests/GoldenMaster/captures/* -text
+
+# Copie historique exacte : conserver les espaces du XML source.
+tests/fixtures/expoactes-3.2.4-params.xml whitespace=-blank-at-eol

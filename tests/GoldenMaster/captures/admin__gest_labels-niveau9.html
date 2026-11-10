@@ -1,0 +1,461 @@
+HTTP 200
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48" />
+<link rel="icon" href="/img/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/img/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/img/favicon-48x48.png" type="image/png" sizes="48x48" />
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180" />
+<link rel="stylesheet" href="/_config/actes.css" type="text/css" />
+<link rel="stylesheet" href="/_config/actes_print.css" type="text/css"  media="print" />
+<link rel="stylesheet" href="/tools/tarteaucitron/css/tarteaucitron.min.css" type="text/css" />
+<script type="text/javascript" src="/tools/tarteaucitron/tarteaucitron.min.js"></script>
+<script type="application/json" id="consentement-reglages">{"message":"Les cookies nous permettent de faciliter la navigation et l\u0027usage du site, de personnaliser le contenu et les annonces et d\u0027analyser notre trafic. L\u0027usage du site implique l\u0027acceptation de ces cookies.","adresse":"https:\/\/www.allaboutcookies.org\/fr\/","position":"top"}</script>
+<script type="text/javascript" src="/tools/js/consentement.js"></script>
+<title>Paramétrage des étiquettes</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="expires" content="never" />
+<meta name="revisit-after" content="15 days" />
+<meta name="robots" content="all, index, follow" />
+<meta name="description" content=" Paramétrage des étiquettes" />
+<meta name="keywords" content="généalogie, dépouillement, actes, tables, patronymes, BMS, NMD, commune, paroisse, Paramétrage des étiquettes" />
+<meta name="generator" content="ExpoActes" />
+
+</head>
+<body id="gest_labels"  >
+<div id="top" class="entete"><div class="bandeau">
+<strong><a href="">Expoactes</a> || </strong>
+D&eacute;pouillement de tables et actes d'&eacute;tat-civil ou de registres paroissiaux
+</div>
+
+</div>
+<div class="navigation">Navigation :: <a href="/index.php">Accueil</a>
+ &gt; <a href="/admin/index.php">Administration</a>
+ &gt; Paramétrage des étiquettes
+</div>
+<p class="erreur" role="status">Protection des fichiers privés non vérifiée. Consultez le contrôle des protections. <a href="/admin/protection.php">Contrôle des protections</a></p>
+<script type="text/javascript">
+
+function changesigle() 
+	{
+	form = document.forms["labels"];
+	form.chsigle.value = "1";
+	form.submit();
+	return true;
+	}
+
+</script>
+<div id="col_menu"><div class="menu_zone">
+<div class="menu_titre">Recherche directe</div>
+<form class="form_rech" name="recherche" method="post" action="/chercher.php">
+&nbsp;<input type="text" name="achercher" />
+&nbsp;<input type="submit" name="Submit" value="Chercher" />
+<br /><input type="radio" name="zone" value="1" checked="checked" />Intéressé(e) 
+<br /><input type="radio" name="zone" value="2" />Mère, conjoint, témoins, parrain...
+<br />&nbsp;Dans les actes de&nbsp;
+<select name="typact" size="1">
+<option value="N">Naissances</option>
+<option value="M">Mariages</option>
+<option value="D">Décès</option>
+<option value="V">Actes divers</option>
+ </select>
+<input type="hidden" name="direct" value="1" />
+<input type="hidden" name="debug" value="" />
+<div class="menuTexte" align="right"><dl><dd><a href="/rechavancee.php">Recherche avancée</a>&nbsp; &nbsp;</dd></dl></div></form>
+</div>
+<div class="menu_zone">
+<div class="menu_titre">Administration&nbsp; &nbsp;&lt;fictif_admin&gt;</div>
+<div class="menuCorps"><dl>
+<dt><a href="/admin/index.php">Inventaire des actes</a></dt>
+<dt><a href="/changepw.php">Changer le mot de passe</a></dt>
+<dt><a href="/admin/charge.php">Charger des actes NIMEGUE</a></dt>
+<dt><a href="/admin/chargecsv.php">Charger des actes CSV</a></dt>
+<dt><a href="/admin/supprime.php">Supprimer des actes</a></dt>
+<dt><a href="/admin/exporte.php">Réexporter des actes</a></dt>
+<dt><a href="/admin/maj_sums.php">Administrer les données</a></dt>
+<dt><a href="/admin/listusers.php">Administrer les utilisateurs</a></dt>
+<dt><a href="/admin/gest_params.php">Administrer le logiciel</a></dt>
+<dt><a href="/admin/aide/aide.html">Aide</a></dt>
+<dt><a href="/index.php?act=logout&amp;jeton={JETON}">Déconnexion</a></dt>
+</dl></div>
+</div>
+</div><div id="col_main_adm"><p align="center"><strong>Administration du logiciel : </strong><a href="gest_params.php">Paramétrage</a> | <strong><a href="gest_labels.php">Etiquettes</a></strong> | <a href="serv_params.php">Etat serveur</a> | <a href="gesttraceip.php">Fitrage IP</a> | <a href="gestindex.php">Index</a> | <a href="listlog.php">Journal</a></p><h2>Gestions des étiquettes des données</h2><p align="center"><strong>Bases : </strong><strong>Naissances</strong> | <a href="gest_labels.php?file=M">Mariages</a> | <a href="gest_labels.php?file=D">Décès</a> | <a href="gest_labels.php?file=V">Divers (par défaut)</a> | <a href="gest_labels.php?file=X">Divers spécifiques</a></p><h2 align="center">Etiquettes des Naissances</h2><form method="post" action="" name="labels">
+<input type="hidden" name="jeton" value="{JETON}" />
+<table cellspacing="3" cellpadding="1" border="0" summary="Formulaire">
+<tr><th>Zone</th><th>Affichage</th><th>Etiquette</th></tr><tr class="row0">
+  <td align="right"><b><i>Groupe : &nbsp;</i></b></td>
+ <input type="hidden" name="grp_1"  value="A1" />
+  <td align="left"><i>&nbsp; Document</i> </td>
+ <td><input type="text"   name="group_1" size="30" maxlength="50" value="Acte de naissance" /></td></tr> <tr class="row1">
+  <td align="left"><b>CODCOM</b> : </td>
+<td><select name="affi_1">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_1"  value="1002" />
+ <input type="text"   name="etiq_1" size="30" maxlength="50" value="Code INSEE" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>COMMUNE</b> : </td>
+<td><select name="affi_2">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_2"  value="1003" />
+ <input type="text"   name="etiq_2" size="30" maxlength="50" value="Commune" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>CODDEP</b> : </td>
+<td><select name="affi_3">
+<option value="F"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M" selected="selected"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_3"  value="1004" />
+ <input type="text"   name="etiq_3" size="30" maxlength="50" value="Code département" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>DEPART</b> : </td>
+<td><select name="affi_4">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_4"  value="1005" />
+ <input type="text"   name="etiq_4" size="30" maxlength="50" value="Département / Province" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>DATETXT</b> : </td>
+<td><select name="affi_5">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_5"  value="1007" />
+ <input type="text"   name="etiq_5" size="30" maxlength="50" value="Date de l&#039;acte" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>DREPUB</b> : </td>
+<td><select name="affi_6">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_6"  value="1008" />
+ <input type="text"   name="etiq_6" size="30" maxlength="50" value="Date républicaine" />  </td> </tr>
+<tr class="row0">
+  <td align="right"><b><i>Groupe : &nbsp;</i></b></td>
+ <input type="hidden" name="grp_2"  value="D1" />
+  <td align="left"><i>&nbsp; Intéressé</i> </td>
+ <td><input type="text"   name="group_2" size="30" maxlength="50" value="Nouveau-né" /></td></tr> <tr class="row1">
+  <td align="left"><b>NOM</b> : </td>
+<td><select name="affi_7">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_7"  value="1011" />
+ <input type="text"   name="etiq_7" size="30" maxlength="50" value="Nom de l&#039;enfant" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>PRE</b> : </td>
+<td>Avec le nom
+  </td>  <td> <input type="hidden" name="zid_8"  value="1012" />
+ <input type="text"   name="etiq_8" size="30" maxlength="50" value="Prénoms" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>SEXE</b> : </td>
+<td><select name="affi_9">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_9"  value="1013" />
+ <input type="text"   name="etiq_9" size="30" maxlength="50" value="Sexe" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>COM</b> : </td>
+<td><select name="affi_10">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_10"  value="1014" />
+ <input type="text"   name="etiq_10" size="30" maxlength="50" value="Commentaire" />  </td> </tr>
+<tr class="row0">
+  <td align="right"><b><i>Groupe : &nbsp;</i></b></td>
+ <input type="hidden" name="grp_3"  value="D2" />
+  <td align="left"><i>&nbsp; Parents intéressé</i> </td>
+ <td><input type="text"   name="group_3" size="30" maxlength="50" value="Parents" /></td></tr> <tr class="row1">
+  <td align="left"><b>P_NOM</b> : </td>
+<td><select name="affi_11">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_11"  value="1015" />
+ <input type="text"   name="etiq_11" size="30" maxlength="50" value="Nom du père" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>P_PRE</b> : </td>
+<td>Avec le nom
+  </td>  <td> <input type="hidden" name="zid_12"  value="1016" />
+ <input type="text"   name="etiq_12" size="30" maxlength="50" value="Prénoms" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>P_COM</b> : </td>
+<td><select name="affi_13">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_13"  value="1017" />
+ <input type="text"   name="etiq_13" size="30" maxlength="50" value="Commentaire" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>P_PRO</b> : </td>
+<td><select name="affi_14">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_14"  value="1018" />
+ <input type="text"   name="etiq_14" size="30" maxlength="50" value="Profession" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>M_NOM</b> : </td>
+<td><select name="affi_15">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_15"  value="1019" />
+ <input type="text"   name="etiq_15" size="30" maxlength="50" value="Nom de la mère" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>M_PRE</b> : </td>
+<td>Avec le nom
+  </td>  <td> <input type="hidden" name="zid_16"  value="1020" />
+ <input type="text"   name="etiq_16" size="30" maxlength="50" value="Prénoms" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>M_COM</b> : </td>
+<td><select name="affi_17">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_17"  value="1021" />
+ <input type="text"   name="etiq_17" size="30" maxlength="50" value="Commentaire" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>M_PRO</b> : </td>
+<td><select name="affi_18">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_18"  value="1022" />
+ <input type="text"   name="etiq_18" size="30" maxlength="50" value="Profession" />  </td> </tr>
+<tr class="row0">
+  <td align="right"><b><i>Groupe : &nbsp;</i></b></td>
+ <input type="hidden" name="grp_4"  value="T1" />
+  <td align="left"><i>&nbsp; Témoins</i> </td>
+ <td><input type="text"   name="group_4" size="30" maxlength="50" value="Témoins" /></td></tr> <tr class="row1">
+  <td align="left"><b>T1_NOM</b> : </td>
+<td><select name="affi_19">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_19"  value="1023" />
+ <input type="text"   name="etiq_19" size="30" maxlength="50" value="Nom du parrain" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>T1_PRE</b> : </td>
+<td>Avec le nom
+  </td>  <td> <input type="hidden" name="zid_20"  value="1024" />
+ <input type="text"   name="etiq_20" size="30" maxlength="50" value="Prénoms" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>T1_COM</b> : </td>
+<td><select name="affi_21">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_21"  value="1025" />
+ <input type="text"   name="etiq_21" size="30" maxlength="50" value="Commentaire" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>T2_NOM</b> : </td>
+<td><select name="affi_22">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_22"  value="1026" />
+ <input type="text"   name="etiq_22" size="30" maxlength="50" value="Nom de la marraine" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>T2_PRE</b> : </td>
+<td>Avec le nom
+  </td>  <td> <input type="hidden" name="zid_23"  value="1027" />
+ <input type="text"   name="etiq_23" size="30" maxlength="50" value="Prénoms" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>T2_COM</b> : </td>
+<td><select name="affi_24">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_24"  value="1028" />
+ <input type="text"   name="etiq_24" size="30" maxlength="50" value="Commentaire" />  </td> </tr>
+<tr class="row0">
+  <td align="right"><b><i>Groupe : &nbsp;</i></b></td>
+ <input type="hidden" name="grp_5"  value="V1" />
+  <td align="left"><i>&nbsp; Références</i> </td>
+ <td><input type="text"   name="group_5" size="30" maxlength="50" value="Références" /></td></tr> <tr class="row1">
+  <td align="left"><b>COTE</b> : </td>
+<td><select name="affi_25">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_25"  value="1009" />
+ <input type="text"   name="etiq_25" size="30" maxlength="50" value="Cote" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>LIBRE</b> : </td>
+<td><select name="affi_26">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_26"  value="1010" />
+ <input type="text"   name="etiq_26" size="30" maxlength="50" value="Libre" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>COMGEN</b> : </td>
+<td><select name="affi_27">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_27"  value="1029" />
+ <input type="text"   name="etiq_27" size="30" maxlength="50" value="Commentaire général" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>PHOTOS</b> : </td>
+<td><select name="affi_28">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_28"  value="1039" />
+ <input type="text"   name="etiq_28" size="30" maxlength="50" value="Photos" />  </td> </tr>
+<tr class="row0">
+  <td align="right"><b><i>Groupe : &nbsp;</i></b></td>
+ <input type="hidden" name="grp_6"  value="W1" />
+  <td align="left"><i>&nbsp; Crédits</i> </td>
+ <td><input type="text"   name="group_6" size="30" maxlength="50" value="Crédits" /></td></tr> <tr class="row1">
+  <td align="left"><b>DEPOSANT</b> : </td>
+<td><select name="affi_29">
+<option value="F" selected="selected"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_29"  value="1033" />
+ <input type="text"   name="etiq_29" size="30" maxlength="50" value="Déposant" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>PHOTOGRA</b> : </td>
+<td><select name="affi_30">
+<option value="F"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A" selected="selected"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_30"  value="1034" />
+ <input type="text"   name="etiq_30" size="30" maxlength="50" value="Photographe" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>RELEVEUR</b> : </td>
+<td><select name="affi_31">
+<option value="F"> Si non vide</option>
+<option value="O" selected="selected"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_31"  value="1035" />
+ <input type="text"   name="etiq_31" size="30" maxlength="50" value="Transcripteur" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>VERIFIEU</b> : </td>
+<td><select name="affi_32">
+<option value="F"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A" selected="selected"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_32"  value="1036" />
+ <input type="text"   name="etiq_32" size="30" maxlength="50" value="Vérificateur" />  </td> </tr>
+<tr class="row0">
+  <td align="right"><b><i>Groupe : &nbsp;</i></b></td>
+ <input type="hidden" name="grp_7"  value="X0" />
+  <td align="left"><i>&nbsp; Gestion</i> </td>
+ <td><input type="text"   name="group_7" size="30" maxlength="50" value="Gestion" /></td></tr> <tr class="row1">
+  <td align="left"><b>IDNIM</b> : </td>
+<td><select name="affi_33">
+<option value="F"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A"> Administration</option>
+<option value="M" selected="selected"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_33"  value="1030" />
+ <input type="text"   name="etiq_33" size="30" maxlength="50" value="Identifiant NIMEGUE" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>LADATE</b> : </td>
+<td><select name="affi_34">
+<option value="F"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A" selected="selected"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_34"  value="1031" />
+ <input type="text"   name="etiq_34" size="30" maxlength="50" value="Date interne" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>DTDEPOT</b> : </td>
+<td><select name="affi_35">
+<option value="F"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A" selected="selected"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_35"  value="1037" />
+ <input type="text"   name="etiq_35" size="30" maxlength="50" value="Date dépot initial" />  </td> </tr>
+ <tr class="row1">
+  <td align="left"><b>DTMODIF</b> : </td>
+<td><select name="affi_36">
+<option value="F"> Si non vide</option>
+<option value="O"> Toujours</option>
+<option value="A" selected="selected"> Administration</option>
+<option value="M"> Inutilisé</option>
+ </select>
+  </td>  <td> <input type="hidden" name="zid_36"  value="1038" />
+ <input type="text"   name="etiq_36" size="30" maxlength="50" value="Date dernière modif." />  </td> </tr>
+ <tr><td align="right">
+<input type="hidden" name="grpnbr"  value="7" />
+<input type="hidden" name="parnbr"  value="36" />
+<input type="hidden" name="file"  value="N" />
+<input type="hidden" name="xconfirm" value="default" />
+<a href="index.php">Annuler</a> &nbsp; &nbsp;</td>
+<td><input type="submit" value="ENREGISTRER" /></td>
+</tr></table>
+</form>
+</div><div id="pied_page2" class="pied_page2"><div id="totop2" class="totop2"><p class="totop2"><strong><a href="#top">Top</a></strong> &nbsp; </p></div><div id="texte_pied2" class="texte_pied2"><p class="texte_pied2"></p></div><div id="copyright2" class="copyright2"><p class="copyright2">Actalibre</p></div></div></body>
+</html>
