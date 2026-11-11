@@ -2,7 +2,7 @@
 
 Toutes les modifications notables d'ActaLibre sont notées dans ce fichier.
 
-## [Non publié]
+## [1.0.0] - 2026-11-11
 
 ### Corrigé
 
@@ -15,7 +15,7 @@ Toutes les modifications notables d'ActaLibre sont notées dans ce fichier.
 - `update.php` affiche une roue animée et « Mise à jour en cours, ne fermez pas cette page… » pendant chaque étape, au lieu d'une page réduite à son titre ; un bouton « Continuer » reste disponible sans JavaScript.
 - L'état du contrôle des protections et le nombre de fichiers non reconnus apparaissent dans le groupe de paramètres « Protection », avec un lien vers le détail ; le lien de la page d'accueil de l'administration est retiré.
 
-## [1.0.0] - 2026-11-09
+## [0.9.0] - 2026-11-09
 
 ### Ajouté
 
