@@ -68,4 +68,26 @@ final class MiseAJourParcoursTest extends TestCase
         self::assertSame('InnoDB',$this->comptesDistincts->query("SHOW TABLE STATUS WHERE Name='{$p}u_user3'")->fetch_assoc()['Engine']);
         self::assertSame('0',$this->comptesDistincts->query("SELECT COUNT(*) FROM {$p}u_session")->fetch_row()[0]);self::assertSame('',$this->site->journal());
     }
+    public function testUnNouvelAdministrateurCreeSurPreuveFtpConduitLaMigration(): void
+    {
+        $this->preparer();$c=$this->site->client();$p=$this->site->prefixe;
+        $accueil=$c->get('/update.php');self::assertSame(1,preg_match('/admin-[0-9a-f]{32}\.txt/',$accueil->corps,$m),$accueil->corps);
+        $preuve=$this->site->racine.'/_config/'.$m[0];
+        $formulaire=['url_site'=>$this->site->url().'/','action'=>'creer','login'=>'nouveau','courriel'=>'nouveau@example.org','mot_de_passe'=>'Nouveau-2026','confirmation'=>'Nouveau-2026'];
+        $r=$c->post('/update.php',$formulaire+['jeton'=>$this->jeton($accueil)]);
+        self::assertSame(400,$r->statut);self::assertStringContainsString('preuve',$r->corps);
+        self::assertSame('0',$this->site->base->query("SELECT COUNT(*) FROM {$p}_user3 WHERE login='nouveau'")->fetch_row()[0]);
+        touch($preuve);
+        $r=$c->post('/update.php',array_replace($formulaire,['login'=>'admin'])+['jeton'=>$this->jeton($c->get('/update.php'))]);
+        self::assertSame(400,$r->statut);self::assertStringContainsString('existe déjà',$r->corps);
+        $r=$c->post('/update.php',$formulaire+['jeton'=>$this->jeton($c->get('/update.php'))]);
+        self::assertFileDoesNotExist($preuve);
+        for ($i=0;$i<100 && str_contains($r->corps,'name="action" value="continuer"');$i++) $r=$c->post('/update.php',['url_site'=>$this->site->url().'/','action'=>'continuer','jeton'=>$this->jeton($r)]);
+        self::assertLessThan(100,$i);self::assertSame(200,$r->statut,$r->corps);self::assertStringContainsString('à jour',$r->corps);
+        $compte=$this->site->base->query("SELECT level,hashpass FROM {$p}_user3 WHERE login='nouveau'")->fetch_assoc();
+        self::assertSame('9',(string)$compte['level']);
+        self::assertTrue(\ActaLibre\Compte\MotDePasse::verifier('Nouveau-2026',$compte['hashpass']));
+        self::assertFalse(\ActaLibre\Compte\MotDePasse::estAncienFormat($compte['hashpass']));
+        self::assertSame('',$this->site->journal());
+    }
 }

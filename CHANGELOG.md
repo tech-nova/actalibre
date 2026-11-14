@@ -2,6 +2,17 @@
 
 Toutes les modifications notables d'ActaLibre sont notées dans ce fichier.
 
+## [Non publié]
+
+### Modifié
+
+- `install.php` procède en deux écrans : le premier ne valide que la connexion MySQL et écrit le fichier de connexion ; le second, sur une base vierge, demande l’adresse du site et crée le premier administrateur. Une base existante (ExpoActes ou ActaLibre) est renvoyée vers `update.php`.
+- La création d’un administrateur exige une preuve de contrôle du serveur : un fichier vide, au nom aléatoire affiché, déposé par FTP dans `_config/`.
+
+### Ajouté
+
+- `update.php` permet, pendant une migration depuis ExpoActes, de créer un nouvel administrateur sur la même preuve FTP lorsque les identifiants existants sont perdus.
+
 ## [1.0.0] - 2026-11-11
 
 ### Corrigé

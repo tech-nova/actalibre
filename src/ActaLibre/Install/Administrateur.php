@@ -60,6 +60,37 @@ final class Administrateur
         }
     }
     /**
+     * Administrateur supplémentaire, autorisé par une preuve FTP, sur une base ExpoActes à migrer.
+     * Avant l'élargissement de hashpass, l'empreinte garde l'ancien format que la migration convertira.
+     */
+    public static function ajouter(\mysqli $lien, string $prefixe, string $login, string $courriel, #[\SensitiveParameter] string $motDePasse): void
+    {
+        self::valider($login, $courriel, $motDePasse);
+        $table = self::table($lien, $prefixe);
+        if ($table === null) {
+            throw new \RuntimeException('Table des comptes absente.');
+        }
+        if (self::lignes($lien, "SELECT ID FROM `{$table}` WHERE login=?", [$login]) !== []) {
+            throw new \RuntimeException('Cet identifiant existe déjà : choisissez-en un autre.');
+        }
+        $colonne = self::lignes($lien, "SHOW COLUMNS FROM `{$table}` WHERE Field='hashpass'");
+        if (count($colonne) !== 1 || preg_match('/\Avarchar\(([0-9]+)\)\z/i', (string) $colonne[0]['Type'], $m) !== 1) {
+            throw new \RuntimeException('Table des comptes non prise en charge.');
+        }
+        $empreinte = MotDePasse::hacher($motDePasse);
+        if (strlen($empreinte) > (int) $m[1]) {
+            $empreinte = MotDePasse::hacherAncienFormat($motDePasse);
+        }
+        try {
+            $r = Requete::executer($lien, "INSERT INTO `{$table}` (login,hashpass,email,level) VALUES (?,?,?,9)", [$login, $empreinte, $courriel]);
+        } catch (\mysqli_sql_exception) {
+            throw new \RuntimeException('Impossible de créer le compte administrateur.');
+        }
+        if ($r === false || !self::verifier($lien, $prefixe, $login, $motDePasse)) {
+            throw new \RuntimeException('Impossible de créer le compte administrateur.');
+        }
+    }
+    /**
      * @param list<string> $parametres
      * @return list<array<string,mixed>>
      */

@@ -21,36 +21,78 @@ final class InstallateurTest extends BaseInstallation
     {
         return new AccesMysql((string) getenv('GM_DB_HOST'), (string) getenv('GM_DB_NAME'), (string) getenv('GM_DB_USER'), (string) getenv('GM_DB_PASS'), $this->prefixe);
     }
+    private function installer(string $login, string $courriel, string $motDePasse, bool $preuve = true, ?\Closure $apres = null): void
+    {
+        (new Installateur($this->racine, $apres))->installer($this->acces(), null, $login, $courriel, $motDePasse, $motDePasse, 'https://example.org', $preuve);
+    }
     public static function etapes(): array
     {
-        return array_map(static fn($e) => [$e], ['params', 'installation', 'donnees', 'compte', 'schema', 'produit', 'nettoyage', 'publication']);
+        return array_map(static fn($e) => [$e], ['params', 'installation', 'donnees', 'compte', 'schema', 'produit', 'nettoyage']);
+    }
+    public function testLaConnexionPublieLeFichierSansEcrireEnBase(): void
+    {
+        $avant = $this->empreinte();
+        $r = (new Installateur($this->racine))->connecter($this->acces());
+        self::assertSame('publie', $r['publication']);
+        self::assertNull($r['contenu']);
+        self::assertFileExists($this->racine . '/_config/connect.inc.php');
+        self::assertSame($avant, $this->empreinte());
+        $this->expectExceptionMessage('Fichier de connexion déjà présent');
+        (new Installateur($this->racine))->connecter($this->acces());
+    }
+    public function testLAdministrateurExigeDAbordLaConnexion(): void
+    {
+        $avant = $this->empreinte();
+        try {
+            $this->installer('admin', 'a@example.org', 'secret');
+            self::fail('Installation sans fichier de connexion');
+        } catch (\RuntimeException $e) {
+            self::assertStringContainsString('connexion', $e->getMessage());
+            self::assertSame($avant, $this->empreinte());
+        }
+    }
+    public function testUnNouvelAdministrateurExigeLaPreuveFtp(): void
+    {
+        (new Installateur($this->racine))->connecter($this->acces());
+        $avant = $this->empreinte();
+        try {
+            $this->installer('admin', 'a@example.org', 'secret', false);
+            self::fail('Administrateur créé sans preuve');
+        } catch (\RuntimeException $e) {
+            self::assertStringContainsString('preuve', $e->getMessage());
+            self::assertSame($avant, $this->empreinte());
+        }
     }
     #[DataProvider('etapes')]
     public function testChaqueInterruptionEstReprenableSansSecondCompte(string $arret): void
     {
-        $i = new Installateur($this->racine, function ($etape) use ($arret) {
-            self::assertFileDoesNotExist($this->racine . '/_config/connect.inc.php');
-            if ($etape === $arret) {
-                throw new \RuntimeException('Interruption');
-            }
-        });
+        (new Installateur($this->racine))->connecter($this->acces());
         try {
-            $i->executer($this->acces(), 'admin', 'a@example.org', 'secret', 'secret', 'https://example.org');
+            $this->installer('admin', 'a@example.org', 'secret', true, function ($etape) use ($arret) {
+                if ($etape === $arret) {
+                    throw new \RuntimeException('Interruption');
+                }
+            });
             self::fail('Étape non atteinte');
         } catch (\RuntimeException $e) {
             self::assertSame('Interruption', $e->getMessage());
         }
-        if (in_array($arret, ['compte', 'schema', 'produit', 'nettoyage', 'publication'], true)) {
+        if (in_array($arret, ['compte', 'schema', 'produit', 'nettoyage'], true)) {
             $avant = $this->empreinte();
             try {
-                (new Installateur($this->racine))->executer($this->acces(), 'intrus', 'b@example.org', 'secret', 'secret', 'https://example.org');
+                // Même muni d'une preuve FTP, un second compte n'est jamais créé.
+                $this->installer('intrus', 'b@example.org', 'secret');
                 self::fail('Intrus admis');
             } catch (\RuntimeException) {
                 self::assertSame($avant, $this->empreinte());
             }
         }
-        $r = (new Installateur($this->racine))->executer($this->acces(), 'admin', 'a@example.org', 'secret', 'secret', 'https://example.org');
-        self::assertSame('publie', $r['publication']);
+        if ($arret === 'nettoyage') {
+            self::assertSame('a_jour', EtatSite::lire($this->base, $this->prefixe, $this->racine . '/composer.json')->etat);
+        } else {
+            // Après la création du compte, ses identifiants suffisent ; avant, la preuve reste exigée.
+            $this->installer('admin', 'a@example.org', 'secret', !in_array($arret, ['compte', 'schema', 'produit'], true));
+        }
         self::assertSame('a_jour', EtatSite::lire($this->base, $this->prefixe, $this->racine . '/composer.json')->etat);
         self::assertSame('1', $this->base->query("SELECT COUNT(*) FROM {$this->prefixe}_user3 WHERE level=9")->fetch_row()[0]);
         self::assertSame('0', $this->base->query("SELECT COUNT(*) FROM {$this->prefixe}_params WHERE param='EA_VERSION'")->fetch_row()[0]);
@@ -60,7 +102,7 @@ final class InstallateurTest extends BaseInstallation
         $this->base->query("CREATE TABLE {$this->prefixe}_intrus (id INT)");
         $avant = $this->empreinte();
         try {
-            (new Installateur($this->racine))->executer($this->acces(), 'admin', 'a@example.org', 'secret', 'secret', 'https://example.org');
+            (new Installateur($this->racine))->connecter($this->acces());
             self::fail('Base incohérente admise');
         } catch (\RuntimeException) {
             self::assertSame($avant, $this->empreinte());
@@ -78,10 +120,11 @@ final class InstallateurTest extends BaseInstallation
         $a = $this->acces();
         $a = new AccesMysql($a->serveur, $a->base, $a->utilisateur, $a->motDePasse, strtoupper($a->prefixe));
         try {
-            (new Installateur($this->racine))->executer($a, 'admin', 'a@example.org', 'secret', 'secret', 'https://example.org');
+            (new Installateur($this->racine))->connecter($a);
             self::fail('Mauvaise casse admise');
         } catch (\RuntimeException) {
             self::assertSame($avant, $this->empreinte());
+            self::assertFileDoesNotExist($this->racine . '/_config/connect.inc.php');
         }
     }
     public static function modesSQL(): array
@@ -93,18 +136,18 @@ final class InstallateurTest extends BaseInstallation
     {
         $avant = (new \mysqli_driver())->report_mode;
         $this->base->query("CREATE TABLE {$this->prefixe}_params(param VARCHAR(25) PRIMARY KEY,valeur TEXT)");
+        (new Installateur($this->racine))->connecter($this->acces());
         try {
             mysqli_report($mode);
             $refuse = false;
             try {
-                (new Installateur($this->racine))->executer($this->acces(), 'admin', 'a@example.org', 'secret', 'secret', 'https://example.org');
+                $this->installer('admin', 'a@example.org', 'secret');
             } catch (\RuntimeException $e) {
                 $refuse = true;
                 self::assertStringNotContainsString('INSERT', $e->getMessage());
             }
             self::assertTrue($refuse);
             self::assertSame('0', $this->base->query("SELECT COUNT(*) FROM {$this->prefixe}_params")->fetch_row()[0]);
-            self::assertFileDoesNotExist($this->racine . '/_config/connect.inc.php');
         } finally {
             mysqli_report($avant);
         }

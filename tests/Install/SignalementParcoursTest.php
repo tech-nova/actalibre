@@ -18,8 +18,8 @@ final class SignalementParcoursTest extends TestCase
             $path=getenv('PATH');putenv('PATH='.$bin.':'.$path);
             try { $s->demarrer(); } finally { putenv('PATH='.$path); }
             InventaireDuBanc::ecrire($s->racine);
-            $c=$s->client();$f=$c->get('/install.php');preg_match('/name="jeton" value="([0-9a-f]{64})"/',$f->corps,$m);
-            self::assertSame(200,$c->post('/install.php',$s->formulaire()+['jeton'=>$m[1]])->statut);
+            $c=$s->client();
+            self::assertSame(200,InstallationHttp::installer($c,$s->racine,$s->formulaire())->statut);
             file_put_contents($s->racine.'/_config/connect.inc.php', "\ndefine('GEOCODEUR','mock');\n",FILE_APPEND);
             $c->post('/admin/index.php',['login'=>'admin','passwd'=>'Secret-2026']);
             $s->base->query("INSERT INTO {$s->prefixe}_nai3 (COMMUNE,DEPART,NOM,PRE,LADATE) VALUES ('Lieu','Dept','TEMOIN','Alice','1900-01-01')");
