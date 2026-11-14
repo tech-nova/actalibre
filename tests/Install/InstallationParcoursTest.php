@@ -32,18 +32,55 @@ final class InstallationParcoursTest extends TestCase
         self::assertSame(1, preg_match('/name="jeton" value="([0-9a-f]{64})"/', $r->corps, $m), $r->corps);
         return $m[1];
     }
+    /** Écran 1 : seule la connexion est validée, puis l'installation revient sur elle-même. */
+    private function connecter(Client $c, array $supplement = []): void
+    {
+        $r = $c->post('/install.php', $this->site->formulaire() + $supplement + ['jeton' => $this->jeton($c)]);
+        self::assertSame(303, $r->statut, $r->corps);
+        self::assertStringContainsString('Location: install.php', $r->entetes);
+        self::assertFileExists($this->site->racine . '/_config/connect.inc.php');
+    }
+    /** Écran 2 : nom du fichier de preuve demandé à ce navigateur. */
+    private function preuve(Client $c): string
+    {
+        $r = $c->get('/install.php');
+        self::assertSame(200, $r->statut, $r->corps);
+        self::assertStringContainsString('Étape 2 sur 2', $r->corps);
+        self::assertSame(1, preg_match('/admin-[0-9a-f]{32}\.txt/', $r->corps, $m), $r->corps);
+        return $this->site->racine . '/_config/' . $m[0];
+    }
     public function testInstalleSansVendorDepuisUnSousDossier(): void
     {
         $this->site->demarrer(true);
         $c = $this->site->client();
-        $jeton = $this->jeton($c);
+        $this->jeton($c);
         foreach (['.htaccess', '_config', 'tmp/logs', 'tmp/backups', 'admin/_upload'] as $f) {
             self::assertFileDoesNotExist($this->site->racine . '/' . $f);
         }
-        $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $jeton]);
-        self::assertSame(200, $r->statut);
+        $avant = $this->empreinte();
+        $this->connecter($c);
+        self::assertSame($avant, $this->empreinte(), 'L’écran de connexion n’écrit rien en base.');
+        $accueil = $c->get('/index.php');
+        self::assertSame(503, $accueil->statut);
+        self::assertStringContainsString('install.php"', $accueil->corps, 'L’accueil mène à l’écran administrateur.');
+        $r = $c->get('/update.php');
+        self::assertSame(303, $r->statut);
+        self::assertStringContainsString('Location: install.php', $r->entetes);
+        $preuve = $this->preuve($c);
+        $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $this->jeton($c)]);
+        self::assertSame(400, $r->statut);
+        self::assertStringContainsString('preuve', $r->corps);
+        self::assertSame($avant, $this->empreinte());
+        $autre = $this->site->deuxiemeClient();
+        touch($this->preuve($autre));
+        $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $this->jeton($c)]);
+        self::assertSame(400, $r->statut, 'La preuve d’un autre navigateur ne vaut pas pour celui-ci.');
+        touch($preuve);
+        $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $this->jeton($c)]);
+        self::assertSame(200, $r->statut, $r->corps);
         self::assertStringContainsString('Installation terminée', $r->corps);
         self::assertStringNotContainsString('Secret-2026', $r->corps);
+        self::assertFileDoesNotExist($preuve);
         self::assertFileExists($this->site->racine . '/_config/connect.inc.php');
         $p = $this->site->prefixe;
         self::assertSame('a_jour', EtatSite::lire($this->site->base, $p, $this->site->racine . '/composer.json')->etat);
@@ -102,17 +139,17 @@ final class InstallationParcoursTest extends TestCase
         $this->site->demarrer();
         $this->etatMinimal($version, $separes);
         $c = $this->site->client();
-        $j = $this->jeton($c);
         $avant = $this->empreinte();
-        $form = array_replace($this->site->formulaire(), ['login' => 'Admin', 'courriel' => '', 'confirmation' => '', 'jeton' => $j]);
+        $supplement = [];
         if ($separes) {
-            $form += ['comptes_distincts' => '1', 'comptes_serveur' => $form['serveur'], 'comptes_base' => $form['base'], 'comptes_utilisateur' => $form['utilisateur'], 'comptes_mot_de_passe_mysql' => $form['mot_de_passe_mysql'], 'comptes_prefixe' => $form['prefixe'] . '_u'];
+            $f = $this->site->formulaire();
+            $supplement = ['comptes_distincts' => '1', 'comptes_serveur' => $f['serveur'], 'comptes_base' => $f['base'], 'comptes_utilisateur' => $f['utilisateur'], 'comptes_mot_de_passe_mysql' => $f['mot_de_passe_mysql'], 'comptes_prefixe' => $f['prefixe'] . '_u'];
         }
-        $r = $c->post('/install.php', $form);
+        $this->connecter($c, $supplement);
+        $r = $c->get('/install.php');
         self::assertSame(303, $r->statut, $r->corps);
         self::assertStringContainsString('Location: update.php', $r->entetes);
         self::assertSame($avant, $this->empreinte());
-        self::assertFileExists($this->site->racine . '/_config/connect.inc.php');
         self::assertSame('', $this->site->journal());
         // Ne pas suivre la destination du lot 4.
     }
@@ -128,7 +165,7 @@ final class InstallationParcoursTest extends TestCase
         $c = $this->site->client();
         $j = $this->jeton($c);
         $avant = $this->empreinte();
-        $r = $c->post('/install.php', array_replace($this->site->formulaire(), ['login' => 'Admin', 'jeton' => $j]));
+        $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $j]);
         self::assertSame(400, $r->statut);
         self::assertSame($avant, $this->empreinte());
         self::assertFileDoesNotExist($this->site->racine . '/_config/connect.inc.php');
@@ -143,6 +180,7 @@ final class InstallationParcoursTest extends TestCase
         $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $j]);
         self::assertSame(200, $r->statut);
         self::assertStringContainsString('Déposez ce contenu exact', $r->corps);
+        self::assertStringContainsString('href="install.php"', $r->corps);
         self::assertSame(1, preg_match('~<textarea[^>]*>(.*?)</textarea>~s', $r->corps, $m));
         self::assertStringContainsString('Cache-Control: no-store', $r->entetes);
         $f = $this->site->racine . '/_config/connect.inc.php';
@@ -156,19 +194,18 @@ final class InstallationParcoursTest extends TestCase
         fclose($t[2]);
         self::assertSame(0, proc_close($p), $erreurs);
         self::assertSame($this->site->connexion['nom'], $sortie);
-        self::assertSame(403, $c->get('/install.php')->statut);
+        $this->preuve($c);
         self::assertSame('', $this->site->journal());
     }
     public function testUneDeuxiemeRequeteNePeutPasInstallerPendantLaPremiere(): void
     {
         $this->site->demarrer();
         $c = $this->site->deuxiemeClient();
-        $j = $this->jeton($c);
         $pret = dirname($this->site->racine) . '/pret';
         $suite = dirname($this->site->racine) . '/suite';
         $script = dirname($this->site->racine) . '/premier.php';
         $f = $this->site->formulaire();
-        $code = '<?php require ' . var_export(dirname(__DIR__, 2) . '/src/autoload.php', true) . '; $a=new ActaLibre\Install\AccesMysql(' . implode(',', array_map(static fn($v) => var_export($v, true), [$f['serveur'], $f['base'], $f['utilisateur'], $f['mot_de_passe_mysql'], $f['prefixe']])) . '); $i=new ActaLibre\Install\Installateur(' . var_export($this->site->racine, true) . ',function($e){if($e!=="installation")return;file_put_contents(' . var_export($pret, true) . ',"prêt");$limite=microtime(true)+15;while(!is_file(' . var_export($suite, true) . ') && microtime(true)<$limite)usleep(10000);});echo json_encode($i->executer($a,"admin","admin@example.org","Secret-2026","Secret-2026","https://example.org"));';
+        $code = '<?php require ' . var_export(dirname(__DIR__, 2) . '/src/autoload.php', true) . '; $a=new ActaLibre\Install\AccesMysql(' . implode(',', array_map(static fn($v) => var_export($v, true), [$f['serveur'], $f['base'], $f['utilisateur'], $f['mot_de_passe_mysql'], $f['prefixe']])) . '); $i=new ActaLibre\Install\Installateur(' . var_export($this->site->racine, true) . ',function($e){if($e!=="installation")return;file_put_contents(' . var_export($pret, true) . ',"prêt");$limite=microtime(true)+15;while(!is_file(' . var_export($suite, true) . ') && microtime(true)<$limite)usleep(10000);});$r=$i->connecter($a);$i->installer($a,null,"admin","admin@example.org","Secret-2026","Secret-2026","https://example.org",true);echo $r["publication"];';
         touch($script);
         chmod($script, 0600);
         file_put_contents($script, $code);
@@ -179,8 +216,9 @@ final class InstallationParcoursTest extends TestCase
                 usleep(10000);
             }
             self::assertFileExists($pret);
+            touch($this->preuve($c));
             $avant = $this->empreinte();
-            $r = $c->post('/install.php', $f + ['jeton' => $j]);
+            $r = $c->post('/install.php', array_replace($f, ['login' => 'intrus']) + ['jeton' => $this->jeton($c)]);
             self::assertSame(400, $r->statut);
             self::assertStringContainsString('installation en cours', $r->corps);
             self::assertSame($avant, $this->empreinte());
@@ -192,8 +230,11 @@ final class InstallationParcoursTest extends TestCase
         fclose($t[1]);
         fclose($t[2]);
         self::assertSame(0, proc_close($p), $erreur);
-        self::assertSame('publie', json_decode($sortie, true)['publication']);
-        self::assertSame(403, $c->post('/install.php', $f + ['jeton' => $j])->statut);
+        self::assertSame('publie', $sortie);
+        $r = $c->get('/install.php');
+        self::assertSame(303, $r->statut);
+        self::assertStringContainsString('Location: update.php', $r->entetes);
+        self::assertSame('1', $this->site->base->query("SELECT COUNT(*) FROM {$this->site->prefixe}_user3")->fetch_row()[0]);
         self::assertSame('', $this->site->journal());
     }
 }

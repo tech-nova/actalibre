@@ -58,8 +58,8 @@ final class ControleSiteParcoursTest extends TestCase
     }
     public function testUneInstallationNeuveSansEAParcourtLeSite(): void
     {
-        $c=$this->site->client();$r=$c->get('/install.php');preg_match('/name="jeton" value="([0-9a-f]{64})"/',$r->corps,$m);
-        $r=$c->post('/install.php',$this->site->formulaire()+['jeton'=>$m[1]]);self::assertSame(200,$r->statut,$r->corps);
+        $c=$this->site->client();
+        $r=InstallationHttp::installer($c,$this->site->racine,$this->site->formulaire());self::assertSame(200,$r->statut,$r->corps);
         $this->site->base->query("UPDATE {$this->site->prefixe}_params SET valeur='3' WHERE param='EA_ERROR'");
         $accueil=$c->get('/index.php');self::assertSame(200,$accueil->statut,$accueil->corps.$this->site->journal());self::assertSame(200,$c->get('/login.php')->statut);
         $r=$c->post('/admin/index.php',['login'=>'admin','passwd'=>'Secret-2026']);self::assertSame(200,$r->statut,$r->corps);

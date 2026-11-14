@@ -15,6 +15,12 @@ final class MotDePasse
         return password_hash(sha1($motDePasse), PASSWORD_DEFAULT);
     }
 
+    /** Format ExpoActes, pour une colonne pas encore élargie : la migration le convertit ensuite. */
+    public static function hacherAncienFormat(string $motDePasse): string
+    {
+        return sha1($motDePasse);
+    }
+
     /** Une sauvegarde contient une valeur déjà hachée, un fichier préparé à la main un mot de passe. */
     public static function depuisImport(string $valeur): string
     {

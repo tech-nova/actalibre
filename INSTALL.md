@@ -8,19 +8,20 @@ L’archive doit être transférée en entier, fichiers commençant par un point
 
 1. Créer la base MySQL et un utilisateur ayant les droits nécessaires sur cette base, avec l’outil de l’hébergeur. ActaLibre crée ses tables, pas la base MySQL elle-même.
 2. Extraire l’archive, puis transférer son contenu par FTP dans le dossier choisi, à la racine du domaine ou dans un sous-dossier.
-3. Ouvrir `install.php`. Indiquer l’adresse complète et canonique du site, sous-dossier compris, les accès MySQL et le préfixe des tables, puis l’identifiant, le courriel et le mot de passe du premier administrateur.
-4. La base doit être vierge pour ce préfixe. Aucune donnée ExpoActes n’est nécessaire : les tables, paramètres, métadonnées et prénoms sont livrés. Le site s’appelle initialement « Mon site principal ». Aucune ligne `EA_VERSION` n’est créée.
-5. Après une interruption, reprendre le formulaire avec les mêmes accès. Si un administrateur existe déjà, ses identifiants sont exigés ; aucun second compte n’est ajouté.
+3. Ouvrir `install.php`. **Écran 1 — connexion** : indiquer les accès MySQL et le préfixe des tables. La connexion est vérifiée et le fichier de connexion est écrit ; aucune table n’est créée à cette étape.
+4. **Écran 2 — administrateur** : indiquer l’adresse complète et canonique du site, sous-dossier compris, puis l’identifiant, le courriel et le mot de passe du premier administrateur. Pour prouver le contrôle du serveur, déposer d’abord par FTP un fichier vide portant le nom affiché (`admin-…txt`) dans le dossier `_config/`. Ce nom est propre au navigateur et valable une heure ; le fichier est supprimé après la création du compte.
+5. La base doit être vierge pour ce préfixe. Aucune donnée ExpoActes n’est nécessaire : les tables, paramètres, métadonnées et prénoms sont livrés. Le site s’appelle initialement « Mon site principal ». Aucune ligne `EA_VERSION` n’est créée.
+6. Après une interruption, rouvrir `install.php` : l’écran 2 reprend l’installation. Si un administrateur a déjà été créé, ses identifiants sont exigés ; aucun second compte n’est ajouté.
 
-Le fichier de connexion est publié complet dans `_config/connect.inc.php`, sans remplacer un fichier existant. Si la publication automatique est impossible, déposer par FTP le contenu exact affiché, puis fermer cette page : il contient les accès MySQL. Une reprise après finalisation des marqueurs rattache le site et renvoie vers `update.php` ; le nettoyage de restes terminés demande un administrateur.
+Le fichier de connexion est publié complet dans `_config/connect.inc.php`, sans remplacer un fichier existant. Si la publication automatique est impossible, déposer par FTP le contenu exact affiché, fermer cette page (elle contient les accès MySQL), puis rouvrir `install.php` pour l’écran 2. Pour corriger des accès erronés, supprimer ce fichier par FTP et recommencer l’écran 1.
 
-Un rattachement à une base existante exige son administrateur. Le groupe facultatif « Base des comptes distincte » sert à une table des comptes située dans une autre base ou sous un autre préfixe. Le rattachement ne crée ni tables ni comptes.
+Si l’écran 1 désigne une base existante (ExpoActes 3.2.4 ou ActaLibre), `install.php` renvoie vers `update.php`, qui demande les identifiants d’un administrateur existant. Le groupe facultatif « Base des comptes distincte » sert à une table des comptes située dans une autre base ou sous un autre préfixe. Le rattachement ne crée ni tables ni comptes.
 
 ## Migration depuis ExpoActes 3.2.4 uniquement
 
 1. Mettre l’ancien site en maintenance et sauvegarder **toutes** ses bases, notamment la table des comptes si elle est distincte. Une sauvegarde des seuls actes ne suffit pas. Garder également une copie complète des fichiers, hors du dossier publié.
 2. Transférer l’archive ActaLibre entière par-dessus le site, fichiers cachés compris. Activer PHP ≥ 8.3 à ce moment : l’ancien code peut ne pas fonctionner avec cette version.
-3. Ouvrir `update.php`, vérifier l’adresse canonique puis s’authentifier avec un compte de niveau 9. Les pages ordinaires restent en maintenance jusqu’à la fin de la migration. `install/update.php` redirige vers la nouvelle adresse sans rejouer le POST.
+3. Ouvrir `update.php`, vérifier l’adresse canonique puis s’authentifier avec un compte de niveau 9. Si ces identifiants sont perdus, la rubrique « Identifiants perdus : créer un nouvel administrateur » crée un compte de niveau 9 après dépôt par FTP, dans `_config/`, d’un fichier vide portant le nom affiché ; la migration démarre aussitôt avec ce compte. Les pages ordinaires restent en maintenance jusqu’à la fin de la migration. `install/update.php` redirige vers la nouvelle adresse sans rejouer le POST.
 4. Laisser les formulaires de continuation se soumettre automatiquement. Sans JavaScript, cliquer sur « Continuer ». Après une interruption ou une session expirée, rouvrir `update.php` et se reconnecter : l’avancement est repris. Les utilisateurs gardent leur mot de passe, converti au nouveau format.
 5. Vérifier le bilan, le contrôle des protections et la liste des fichiers non reconnus, puis retirer ceux qui sont inutiles par FTP. Sortir de la maintenance d’exploitation si elle était activée dans les paramètres.
 

@@ -305,11 +305,9 @@ final class SiteJetable
     private function installer(): void
     {
         $client = new Client('http://127.0.0.1:' . $this->port);
-        $formulaire = $client->get('/install.php');
-        self::exiger(preg_match('/name="jeton" value="([0-9a-f]{64})"/', $formulaire->corps, $jeton) === 1, 'Jeton d’installation absent');
-        $reponse = $client->post('/install.php', [
+        $reponse = \ActaLibre\Tests\Install\InstallationHttp::installer($client, $this->racine, [
             'url_site' => 'http://127.0.0.1:' . $this->port . '/',
-            'jeton' => $jeton[1], 'serveur' => $this->connexion['hote'], 'base' => $this->connexion['nom'],
+            'serveur' => $this->connexion['hote'], 'base' => $this->connexion['nom'],
             'utilisateur' => $this->connexion['utilisateur'], 'mot_de_passe_mysql' => $this->connexion['passe'], 'prefixe' => 'gm',
             'login' => self::COMPTE_INSTALLATION['login'], 'courriel' => 'installation@example.org',
             'mot_de_passe' => self::COMPTE_INSTALLATION['passe'], 'confirmation' => self::COMPTE_INSTALLATION['passe'],

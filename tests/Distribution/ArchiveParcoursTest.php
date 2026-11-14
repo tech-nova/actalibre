@@ -111,7 +111,7 @@ PYTHON;
         if ($sansInventaire) { unlink($this->root.'/inventaire-actalibre.json'); }
         file_put_contents($this->root.'/inconnu-'.str_repeat('a',12).'.php','SENTINELLE INERTE');
         $c=$this->client($sousDossier);$get=$c->get('/install.php');self::assertSame(200,$get->statut);
-        $r=$c->post('/install.php',$this->formulaire()+['jeton'=>$this->jeton($get->corps)]);
+        $r=\ActaLibre\Tests\Install\InstallationHttp::installer($c,$this->root,$this->formulaire());
         self::assertSame(200,$r->statut,$r->corps);self::assertStringContainsString('Installation terminée',$r->corps);
         self::assertStringNotContainsString('Secret-archive-2026',$r->corps);
         self::assertSame('0',$this->actes->query("SELECT COUNT(*) FROM {$this->prefixe}_params WHERE param='EA_VERSION'")->fetch_row()[0]);
