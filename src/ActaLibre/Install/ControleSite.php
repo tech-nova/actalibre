@@ -23,7 +23,7 @@ final class ControleSite
             if ($configuration===null) self::maintenance('Aucun fichier de connexion : installer ActaLibre.',$cheminSite.'install.php');
             $c=$configuration->ouvrir();
             $etat=EtatExploitation::lire($c,$racine.'/composer.json');
-            if (!$etat->accessible) self::maintenance($etat->diagnostic,$cheminSite.'update.php');
+            if (!$etat->accessible) self::maintenance($etat->diagnostic,$cheminSite.(Installateur::aInstaller($etat->site)?'install.php':'update.php'));
             self::$verifies[$cle]=$configuration;
             return $configuration;
         } catch (\RuntimeException|\InvalidArgumentException $e) {

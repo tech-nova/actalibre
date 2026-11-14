@@ -60,6 +60,12 @@ final class InstallationParcoursTest extends TestCase
         $avant = $this->empreinte();
         $this->connecter($c);
         self::assertSame($avant, $this->empreinte(), 'L’écran de connexion n’écrit rien en base.');
+        $accueil = $c->get('/index.php');
+        self::assertSame(503, $accueil->statut);
+        self::assertStringContainsString('install.php"', $accueil->corps, 'L’accueil mène à l’écran administrateur.');
+        $r = $c->get('/update.php');
+        self::assertSame(303, $r->statut);
+        self::assertStringContainsString('Location: install.php', $r->entetes);
         $preuve = $this->preuve($c);
         $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $this->jeton($c)]);
         self::assertSame(400, $r->statut);

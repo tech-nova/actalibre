@@ -3,7 +3,7 @@
 declare (strict_types=1);
 namespace ActaLibre\Tests\Install;
 
-use ActaLibre\Install\{AccesMysql, Installateur, EtatSite};
+use ActaLibre\Install\{AccesMysql, ConfigurationSite, ConnexionsSite, EtatExploitation, EtatSite, Installateur, MiseAJour, SessionMiseAJour};
 use PHPUnit\Framework\Attributes\DataProvider;
 final class InstallateurTest extends BaseInstallation
 {
@@ -87,15 +87,41 @@ final class InstallateurTest extends BaseInstallation
                 self::assertSame($avant, $this->empreinte());
             }
         }
-        if ($arret === 'nettoyage') {
-            self::assertSame('a_jour', EtatSite::lire($this->base, $this->prefixe, $this->racine . '/composer.json')->etat);
-        } else {
+        if ($arret === 'produit') {
+            // Les marqueurs finaux existent : le reste ACTALIBRE_INSTALLATION relève du nettoyage authentifié d'update.php.
+            try {
+                $this->installer('admin', 'a@example.org', 'secret', false);
+                self::fail('Base finalisée reprise par install.php');
+            } catch (\RuntimeException $e) {
+                self::assertStringContainsString('update.php', $e->getMessage());
+            }
+            $this->nettoyerParLaMiseAJour('admin', 'secret');
+        } elseif ($arret !== 'nettoyage') {
             // Après la création du compte, ses identifiants suffisent ; avant, la preuve reste exigée.
-            $this->installer('admin', 'a@example.org', 'secret', !in_array($arret, ['compte', 'schema', 'produit'], true));
+            $this->installer('admin', 'a@example.org', 'secret', !in_array($arret, ['compte', 'schema'], true));
         }
+        self::assertSame('0', $this->base->query("SELECT COUNT(*) FROM {$this->prefixe}_params WHERE param='ACTALIBRE_INSTALLATION'")->fetch_row()[0]);
         self::assertSame('a_jour', EtatSite::lire($this->base, $this->prefixe, $this->racine . '/composer.json')->etat);
         self::assertSame('1', $this->base->query("SELECT COUNT(*) FROM {$this->prefixe}_user3 WHERE level=9")->fetch_row()[0]);
         self::assertSame('0', $this->base->query("SELECT COUNT(*) FROM {$this->prefixe}_params WHERE param='EA_VERSION'")->fetch_row()[0]);
+    }
+    private function nettoyerParLaMiseAJour(string $login, string $motDePasse): void
+    {
+        $configuration = new ConfigurationSite($this->racine . '/_config/connect.inc.php', $this->acces());
+        $c = new ConnexionsSite($configuration, $this->base, $this->base);
+        $etat = EtatExploitation::lire($c, $this->racine . '/composer.json');
+        self::assertSame('nettoyer', $etat->action);
+        mkdir($this->racine . '/sessions');
+        session_save_path($this->racine . '/sessions');
+        SessionMiseAJour::ouvrir('/', false);
+        try {
+            $autorisation = SessionMiseAJour::authentifier($this->base, $this->prefixe, $login, $motDePasse, $configuration->perimetre());
+            SessionMiseAJour::lierProcedure($etat);
+            self::assertTrue((new MiseAJour($this->racine))->executer($c, $autorisation, 'nettoyer', 'https://example.org')['terminee']);
+        } finally {
+            $_SESSION = [];
+            session_destroy();
+        }
     }
     public function testUneBaseIncoherenteNeSubitAucuneEcriture(): void
     {

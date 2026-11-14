@@ -78,6 +78,9 @@ final class MiseAJourParcoursTest extends TestCase
         self::assertSame(400,$r->statut);self::assertStringContainsString('preuve',$r->corps);
         self::assertSame('0',$this->site->base->query("SELECT COUNT(*) FROM {$p}_user3 WHERE login='nouveau'")->fetch_row()[0]);
         touch($preuve);
+        $r=$c->post('/update.php',array_replace($formulaire,['url_site'=>$this->site->url().'/?lang=fr'])+['jeton'=>$this->jeton($c->get('/update.php'))]);
+        self::assertSame(400,$r->statut);self::assertFileExists($preuve,'Une adresse refusée ne consomme pas la preuve.');
+        self::assertSame('0',$this->site->base->query("SELECT COUNT(*) FROM {$p}_user3 WHERE login='nouveau'")->fetch_row()[0]);
         $r=$c->post('/update.php',array_replace($formulaire,['login'=>'admin'])+['jeton'=>$this->jeton($c->get('/update.php'))]);
         self::assertSame(400,$r->statut);self::assertStringContainsString('existe déjà',$r->corps);
         $r=$c->post('/update.php',$formulaire+['jeton'=>$this->jeton($c->get('/update.php'))]);

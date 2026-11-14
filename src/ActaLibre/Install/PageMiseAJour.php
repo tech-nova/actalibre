@@ -26,6 +26,8 @@ final class PageMiseAJour
             if ($configuration===null) { header('Location: install.php',true,303);return; }
             $c=$configuration->ouvrir();
             $etat=EtatExploitation::lire($c,$racine.'/composer.json');$message=$etat->diagnostic;
+            // Base vierge ou installation inachevée : l'écran administrateur d'install.php prend le relais.
+            if (Installateur::aInstaller($etat->site)) { header('Location: install.php',true,303);return; }
             if (!in_array($etat->action,['expoactes','reprendre','produit','nettoyer'],true)) {
                 self::vue($message,$etat,'',false,[]);return;
             }
@@ -43,6 +45,9 @@ final class PageMiseAJour
                     http_response_code(403);self::vue('Formulaire expiré ou jeton invalide.',$etat,$jeton,false,[]);return;
                 }
                 $action=self::lirePost('action');$perimetre=$configuration->perimetre();
+                // L'adresse est validée avant tout effet : un compte créé ne doit pas dépendre d'un refus ultérieur.
+                $soumise=self::lirePost('url_site');
+                $origine=ControleProtection::origine($soumise!=='' ? $soumise : $origine);
                 if (in_array($action,['demarrer','produit','nettoyer'],true)) {
                     $a=$configuration->comptes??$configuration->actes;
                     // La décision lue en base, jamais l'action du POST, choisit le limiteur.
@@ -65,8 +70,6 @@ final class PageMiseAJour
                     $autorisation=SessionMiseAJour::autorisation($perimetre);
                     if ($autorisation===null) throw new \RuntimeException('Authentification expirée. Reconnectez-vous pour reprendre.');
                 } else throw new \RuntimeException('Action de mise à jour invalide.');
-                $soumise=self::lirePost('url_site');
-                $origine=ControleProtection::origine($soumise!=='' ? $soumise : $origine);
                 SessionMiseAJour::fermer();
                 $resultat=(new MiseAJour($racine))->executer($c,$autorisation,$action,$origine);
                 $administrateur=true;
