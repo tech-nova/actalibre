@@ -16,7 +16,7 @@
 }
 #geoloc-barre { width: 100%; height: 1.2rem; }
 .geoloc-compteurs { display: grid; grid-template-columns: max-content max-content; gap: .2rem 1rem; }
-.geoloc-compteurs dt { font-weight: bold; }
+.geoloc-compteurs dt { font-weight: bold; padding-top: 0; }
 .geoloc-compteurs dd { margin: 0; }
 #geoloc-bilan { max-height: 12rem; overflow-y: auto; }
 .geoloc-attribution { font-size: .85em; }
