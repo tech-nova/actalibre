@@ -143,4 +143,26 @@ final class GeocodeurTest extends TestCase
         $this->expectException(\ActaLibre\Carte\RefusDebit::class);
         $geocodeur->chercher('Vauclairmont');
     }
+
+    /** @return iterable<string, array{string, ?int}> */
+    public static function datesRetryAfter(): iterable
+    {
+        yield 'date IMF dix minutes plus tard' => ['Sun, 15 Nov 2026 10:10:00 GMT', 600];
+        yield 'format RFC 850 obsolète' => ['Sunday, 15-Nov-26 10:02:00 GMT', 120];
+        yield 'format asctime obsolète' => ['Sun Nov 15 10:00:30 2026', 30];
+        yield 'date déjà passée' => ['Sun, 15 Nov 2026 09:00:00 GMT', 0];
+        yield 'valeur illisible' => ['bientôt', null];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('datesRetryAfter')]
+    public function testUnRetryAfterEnDateDonneLeDelaiRestant(string $valeur, ?int $attendu): void
+    {
+        $maintenant = (new \DateTimeImmutable('2026-11-15 10:00:00', new \DateTimeZone('UTC')))->getTimestamp();
+        try {
+            Geocodeur::controler(['HTTP/1.1 429 Too Many Requests', 'Retry-After: ' . $valeur], $maintenant);
+            self::fail('Un refus de débit est signalé');
+        } catch (\ActaLibre\Carte\RefusDebit $refus) {
+            self::assertSame($attendu, $refus->attente);
+        }
+    }
 }
