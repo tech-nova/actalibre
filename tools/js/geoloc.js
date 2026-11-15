@@ -161,6 +161,8 @@
 		travail: null,
 		actif: false,
 		pause: false,
+		// Vrai tant que la requête « creer » n'a pas répondu : une pause ou une fermeture est alors mémorisée dans « pause ».
+		creation: false,
 		traitesVus: 0,
 		demarrer: function (vue) {
 			this.travail = vue.travail;
@@ -216,6 +218,11 @@
 		suspendre: function () {
 			var self = this;
 			self.pause = true;
+			if (self.travail === null) {
+				fenetre.boutons('fin');
+				fenetre.etat('Suspension demandée : la mise à jour sera suspendue dès sa création.', false);
+				return Promise.resolve();
+			}
 			fenetre.boutons('reprendre');
 			fenetre.etat('Suspension demandée : la recherche en cours se termine.', false);
 			return envoyer('suspendre', { travail: self.travail }).then(function (vue) {
@@ -243,7 +250,7 @@
 	};
 
 	function fermerDialogue() {
-		var enCours = pilote.travail !== null && !pilote.pause;
+		var enCours = (pilote.travail !== null || pilote.creation) && !pilote.pause;
 		var suite = enCours ? pilote.suspendre() : Promise.resolve();
 		fenetre.fermer();
 		annoncer(enCours
@@ -326,9 +333,20 @@
 			var ids = choisies().map(function (c) { return c.value; });
 			fenetre.ouvrir(bouton, ids.length);
 			pilote.travail = null;
+			pilote.pause = false;
+			pilote.creation = true;
 			envoyer('creer', { ids: ids }).then(function (vue) {
-				pilote.demarrer(vue);
+				pilote.creation = false;
+				if (!pilote.pause) {
+					pilote.demarrer(vue);
+					return;
+				}
+				// Fermée ou mise en pause pendant la création : le travail est suspendu sans être avancé.
+				pilote.travail = vue.travail;
+				pilote.traitesVus = vue.traites;
+				pilote.suspendre().then(verifierReprise);
 			}, function (erreur) {
+				pilote.creation = false;
 				pilote.interrompre(erreur.message || 'La mise à jour n\'a pas pu commencer.');
 			});
 		});
