@@ -75,11 +75,39 @@ final class Geocodeur
             'user_agent' => $identifiant,
             'timeout' => self::DELAI,
             'header' => "Accept-Language: fr\r\n",
+            'ignore_errors' => true,
         ]]);
         $corps = @file_get_contents($adresse, false, $contexte);
         if ($corps === false) {
             throw new \RuntimeException('Le service de géocodage ne répond pas');
         }
+        $entetes = function_exists('http_get_last_response_headers') ? (http_get_last_response_headers() ?? []) : $http_response_header;
+        self::controler($entetes);
         return $corps;
+    }
+
+    /**
+     * @param list<string> $entetes en-têtes de la réponse, lignes d'état comprises (la dernière compte après une redirection)
+     * @throws RefusDebit si le service demande de patienter
+     * @throws \RuntimeException pour toute autre réponse que 200
+     */
+    public static function controler(array $entetes): void
+    {
+        $statut = 0;
+        $attente = null;
+        foreach ($entetes as $ligne) {
+            if (preg_match('~\AHTTP/\S+\s+(\d{3})~', $ligne, $m) === 1) {
+                $statut = (int) $m[1];
+                $attente = null;
+            } elseif (preg_match('~\ARetry-After:\s*(\d+)\s*\z~i', $ligne, $m) === 1) {
+                $attente = (int) $m[1];
+            }
+        }
+        if ($statut === 429 || $statut === 503) {
+            throw new RefusDebit('Le service de géocodage demande de patienter (HTTP ' . $statut . ').', $attente);
+        }
+        if ($statut !== 200) {
+            throw new \RuntimeException('Réponse inattendue du service de géocodage (HTTP ' . $statut . ').');
+        }
     }
 }
