@@ -214,9 +214,9 @@ if((int)$id<>0 and $missingargs)
 	 echo '  <input type="hidden" name="id" value="'.\ActaLibre\Securite\Filtre::html($id).'" />';
 	 echo '  <input type="hidden" name="commune" value="'.\ActaLibre\Securite\Filtre::stocke($commune).'" />';
 	 echo '  <input type="hidden" name="action" value="submitted" />';
-	 $versionLue = geoloc_fiches()->lire((int)$id);
-	 foreach (['statut', 'lon', 'lat'] as $champ)
-	   echo '  <input type="hidden" name="version_'.$champ.'" id="version_'.$champ.'" value="'.\ActaLibre\Securite\Filtre::html((string)($versionLue[$champ] ?? '')).'" />';
+	 // La version vient de la lecture qui a rempli les champs visibles : une seconde lecture pourrait porter une version plus récente que les coordonnées affichées.
+	 foreach (['statut' => 'STATUT', 'lon' => 'LON', 'lat' => 'LAT'] as $champ => $colonne)
+	   echo '  <input type="hidden" name="version_'.$champ.'" id="version_'.$champ.'" value="'.\ActaLibre\Securite\Filtre::html((string)($row[$colonne] ?? '')).'" />';
 	 echo '  <a href="aide/geolocalisation.html" target="_blank">Aide</a>&nbsp;';
 	 echo '  <input type="reset" value=" Effacer " />'."\n";
 	 echo " </td><td  colspan='2' align=\"left\">\n";
