@@ -217,7 +217,7 @@ if((int)$id<>0 and $missingargs)
 	 $versionLue = geoloc_fiches()->lire((int)$id);
 	 foreach (['statut', 'lon', 'lat'] as $champ)
 	   echo '  <input type="hidden" name="version_'.$champ.'" id="version_'.$champ.'" value="'.\ActaLibre\Securite\Filtre::html((string)($versionLue[$champ] ?? '')).'" />';
-	 echo '  <a href="aide/geoloc.html" target="_blank">Aide</a>&nbsp;';
+	 echo '  <a href="aide/geolocalisation.html" target="_blank">Aide</a>&nbsp;';
 	 echo '  <input type="reset" value=" Effacer " />'."\n";
 	 echo " </td><td  colspan='2' align=\"left\">\n";
 	 echo ' &nbsp; <input type="submit" value=" *** ENREGISTRER *** " />'."\n";

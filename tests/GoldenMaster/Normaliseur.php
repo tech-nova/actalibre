@@ -33,7 +33,7 @@ final class Normaliseur
         ]);
         return (string) preg_replace(
             // Sans le drapeau u : une réponse peut contenir des octets hors UTF-8, qui feraient échouer l'expression.
-            ['/\{DATE\}( à |\s)\d{2}:\d{2}(:\d{2})?/', '/(Durée (?:du traitement|totale)\s*:\s*)[\d.]+/', '/autokey=[0-9a-f]{32}/', '/\bjeton(=|" value=")[0-9a-f]{64}/'],
+            ['/\{DATE\}( à |\s)\d{2}:\d{2}(:\d{2})?/', '/(Durée (?:du traitement|totale)\s*:\s*)[\d.]+/', '/autokey=[0-9a-f]{32}/', '/\bjeton(=|" value="|=")[0-9a-f]{64}/'],
             ['{DATE}$1{HEURE}', '$1{DUREE}', 'autokey={AUTOKEY}', 'jeton$1{JETON}'],
             $texte
         );

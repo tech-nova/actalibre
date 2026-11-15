@@ -53,6 +53,8 @@ with zipfile.ZipFile(sys.argv[2]) as z:
     assert len(noms)==len(set(noms))
     assert 'install/configuration.php' not in noms
     assert '_config_init/connect.inc.php' not in noms
+    for livre in ['tools/js/geoloc.js','tools/css/geoloc.css','admin/geoloc_travail.php','src/ActaLibre/Geoloc/Moteur.php','src/ActaLibre/Geoloc/Travaux.php']:
+        assert livre in noms, livre
     for nom in noms:
         assert not any(p in {'vendor','tests','docs','.git','.superpowers','graft','_config','_logs','_backup','tmp'} for p in nom.split('/'))
         assert nom != 'composer.lock'
@@ -126,6 +128,9 @@ PYTHON;
         self::assertSame(200,$c->post('/admin/index.php',['login'=>'admin','passwd'=>'Secret-archive-2026'])->statut);
         self::assertStringContainsString('à jour',$c->get('/update.php')->corps);
         $css=$c->get('/_config/actes.css');self::assertSame(200,$css->statut);
+        // Le stockage de la géolocalisation (créé au premier géocodage) reste privé, comme le reste de tmp/.
+        is_dir($this->root.'/tmp/actalibre/geocodage') || mkdir($this->root.'/tmp/actalibre/geocodage',0700,true);file_put_contents($this->root.'/tmp/actalibre/geocodage/debit.json','{"pasAvant":0}');
+        self::assertSame(403,$c->get('/tmp/actalibre/geocodage/debit.json')->statut);
     }
     public static function migrations(): iterable { yield 'archive'=>[false];yield 'sources conservees'=>[true]; }
     #[DataProvider('migrations')]

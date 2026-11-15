@@ -28,6 +28,7 @@ final class NormaliseurTest extends TestCase
             'racine' => ['/tmp/actalibre-gm-42/_logs', '{RACINE}/_logs'],
             'jeton dans un champ' => ['<input name="jeton" value="' . str_repeat('a', 64) . '" />', '<input name="jeton" value="{JETON}" />'],
             'jeton dans un lien' => ['?jeton=' . str_repeat('a', 64) . '&amp;a=1', '?jeton={JETON}&amp;a=1'],
+            'jeton dans un attribut de données' => ['<dialog data-jeton="' . str_repeat('a', 64) . '">', '<dialog data-jeton="{JETON}">'],
             'version PHP' => ['PHP 8.4.27', 'PHP {VERSION_PHP}'],
             'version MySQL' => ['MySQL 8.0.46', 'MySQL {VERSION_MYSQL}'],
             'durée de traitement' => ['Durée du traitement  : 12 sec.', 'Durée du traitement  : {DUREE} sec.'],
