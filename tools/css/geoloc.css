@@ -1,0 +1,23 @@
+/* Géolocalisation des localités (administration). Les commandes n'apparaissent qu'avec JavaScript. */
+.geoloc-case { display: none; }
+.geoloc-actif .geoloc-case { display: table-cell; }
+.geoloc-commandes button, .geoloc-pied button { margin-right: .4em; }
+.geoloc-masque { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+#geoloc-dialogue { width: calc(100% - 2rem); max-width: 36rem; border: 1px solid #8a94a3; border-radius: .5rem; padding: 1.25rem; background: #fff; color: #172433; }
+#geoloc-dialogue::backdrop { background: rgba(0, 0, 0, .45); }
+#geoloc-dialogue h2 { margin-top: 0; }
+.geoloc-activite { display: flex; align-items: center; gap: .8rem; min-height: 2rem; }
+.geoloc-roue { flex: none; width: 1.6rem; height: 1.6rem; border: .25rem solid #d5dbe3; border-top-color: #145a8d; border-radius: 50%; visibility: hidden; }
+#geoloc-dialogue.actif .geoloc-roue { visibility: visible; animation: geoloc-tourne .9s linear infinite; }
+@keyframes geoloc-tourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+	#geoloc-dialogue.actif .geoloc-roue { animation: none; }
+}
+#geoloc-barre { width: 100%; height: 1.2rem; }
+.geoloc-compteurs { display: grid; grid-template-columns: max-content max-content; gap: .2rem 1rem; }
+.geoloc-compteurs dt { font-weight: bold; }
+.geoloc-compteurs dd { margin: 0; }
+#geoloc-bilan { max-height: 12rem; overflow-y: auto; }
+.geoloc-attribution { font-size: .85em; }
+.geoloc-boutons button { margin: .3rem .4rem 0 0; }

@@ -233,4 +233,23 @@ final class GeolocalisationParcoursTest extends TestCase
         self::assertSame('panne', $donnees['erreur']);
         self::assertSame(['N', '0', '0'], $this->etat($id));
     }
+
+    public function testLaListeProposeLaSelectionDesLignesAffichees(): void
+    {
+        $introuvable = $this->fiche('GeoIntrouvable', 'I');
+        $corps = $this->site->client('niveau9')->get('/admin/listgeolocs.php', ['xord' => 'S'])->corps;
+
+        foreach (['id="geoloc-tout" aria-label="Tout sélectionner sur cette page"', '>Tout sélectionner</button>', '>Sélectionner les communes non géolocalisées</button>',
+            'Coordonnées géographiques des éléments sélectionnés : <button type="button" id="geoloc-maj" disabled', '>Mettre à jour</button>',
+            'La mise à jour groupée des coordonnées nécessite JavaScript', 'tools/js/geoloc.js', 'id="geoloc-dialogue"', '<form id="geoloc-selection" autocomplete="off">'] as $attendu) {
+            self::assertStringContainsString($attendu, $corps);
+        }
+        self::assertStringContainsString('<tr class="row0" data-id="' . $introuvable . '" data-statut="I">', str_replace('row1', 'row0', $corps));
+        self::assertStringContainsString('aria-label="Sélectionner GeoIntrouvable, XG"', $corps);
+        $cases = substr_count($corps, 'name="ids[]"');
+        self::assertSame(substr_count($corps, ' data-id="'), $cases);
+        self::assertGreaterThan(0, $cases);
+        self::assertLessThanOrEqual(100, $cases, 'Seules les lignes de la page affichée sont sélectionnables');
+        self::assertStringContainsString('>Introuvable</td>', $corps);
+    }
 }
