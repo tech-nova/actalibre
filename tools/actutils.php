@@ -2251,6 +2251,24 @@ function geoloc_limite(): \ActaLibre\Geoloc\LimiteDebit
 	return new \ActaLibre\Geoloc\LimiteDebit(geoloc_stockage(), geoloc_horloge(), static function (float $secondes): void { usleep((int)ceil($secondes * 1000000)); });
 	}
 
+function geoloc_moteur(): \ActaLibre\Geoloc\Moteur
+	{
+	$adresse = geoloc_adresse();
+	$geocodeur = new \ActaLibre\Carte\Geocodeur($adresse, null, \ActaLibre\Carte\Geocodeur::identifiant(ACTALIBRE_VERSION,adresse_publique()));
+	return new \ActaLibre\Geoloc\Moteur(
+		geoloc_fiches(),
+		new \ActaLibre\Geoloc\Cache(geoloc_stockage(), geoloc_horloge(), $adresse),
+		geoloc_limite(),
+		static fn (string $requete): ?array => $geocodeur->chercher($requete)
+		);
+	}
+
+function geoloc_travaux(): \ActaLibre\Geoloc\Travaux
+	{
+	global $dbname;
+	return new \ActaLibre\Geoloc\Travaux(geoloc_stockage(), geoloc_horloge(), (string)$dbname.'/'.EA_DB);
+	}
+
 //------------------------------------------------------------------------------
 
 function geocoder_commune($com,$dep)

@@ -59,4 +59,178 @@ final class GeolocalisationParcoursTest extends TestCase
         self::assertSame(403, $page->statut);
         self::assertSame(0, $this->nombre('SELECT COUNT(*) FROM gm_geoloc'));
     }
+
+    private string $journal = '';
+
+    private function fiche(string $commune, string $statut, float $lon = 0.0, float $lat = 0.0): int
+    {
+        $requete = $this->site->base->prepare('INSERT INTO gm_geoloc (COMMUNE, DEPART, LON, LAT, STATUT) VALUES (?, ?, ?, ?, ?)');
+        $depart = 'XG';
+        $requete->bind_param('ssdds', $commune, $depart, $lon, $lat, $statut);
+        $requete->execute();
+        return (int) $this->site->base->insert_id;
+    }
+
+    /** @return array{0:string,1:string,2:string} statut, longitude, latitude */
+    private function etat(int $id): array
+    {
+        return $this->site->base->query("SELECT STATUT, CAST(ROUND(LON, 4) AS CHAR), CAST(ROUND(LAT, 4) AS CHAR) FROM gm_geoloc WHERE ID = $id")->fetch_row();
+    }
+
+    /** @return array<string,mixed> */
+    private function json(Reponse $reponse, int $statut = 200): array
+    {
+        self::assertSame($statut, $reponse->statut, $reponse->corps);
+        self::assertStringContainsStringIgnoringCase('content-type: application/json', $reponse->entetes);
+        $donnees = json_decode($reponse->corps, true);
+        self::assertIsArray($donnees, $reponse->corps);
+        return $donnees;
+    }
+
+    /** @param list<int> $ids @return array<string,mixed> */
+    private function creer(Client $client, array $ids): array
+    {
+        $parametres = ['action' => 'creer'];
+        foreach ($ids as $rang => $id) {
+            $parametres['ids[' . $rang . ']'] = $id;
+        }
+        return $this->json($client->post('/admin/geoloc_travail.php', $parametres));
+    }
+
+    /** @return array<string,mixed> */
+    private function terminer(Client $client, string $travail): array
+    {
+        for ($tour = 0; $tour < 20; $tour++) {
+            $vue = $this->json($client->post('/admin/geoloc_travail.php', ['action' => 'avancer', 'travail' => $travail]));
+            if (!in_array($vue['etat'], ['pret', 'actif'], true)) {
+                return $vue;
+            }
+        }
+        self::fail('Le travail ne se termine pas');
+    }
+
+    /** @return list<array{0:float,1:string}> */
+    private function appels(): array
+    {
+        $lignes = file($this->journal, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+        return array_map(static function (string $ligne): array {
+            [$temps, $requete] = explode("\t", $ligne, 2);
+            return [(float) $temps, $requete];
+        }, $lignes);
+    }
+
+    public function testUnTravailAppliqueLesReglesSansDepasserLeDebit(): void
+    {
+        $this->journal = $this->site->nominatimSimule();
+        $nouvelle = $this->fiche('GeoNouvelle', 'N');
+        $introuvable = $this->fiche('GeoIntrouvable', 'N');
+        $manuelle = $this->fiche('GeoManuelle', 'M', 1.5, 45.5);
+        $auto = $this->fiche('GeoAuto', 'A', 1.0, 1.0);
+        $client = $this->site->client('niveau9');
+
+        $vue = $this->terminer($client, $this->creer($client, [$nouvelle, $introuvable, $manuelle, $auto])['travail']);
+
+        self::assertSame('termine', $vue['etat']);
+        self::assertSame(['trouvee' => 2, 'introuvable' => 1, 'manuelle' => 1, 'a_verifier' => 0], $vue['compteurs']);
+        self::assertSame(['A', '2.3522', '48.8566'], $this->etat($nouvelle));
+        self::assertSame('I', $this->etat($introuvable)[0]);
+        self::assertSame(['M', '1.5', '45.5'], $this->etat($manuelle));
+        self::assertSame(['A', '2.3522', '48.8566'], $this->etat($auto));
+        $appels = $this->appels();
+        self::assertSame(['GeoNouvelle, XG', 'GeoIntrouvable, XG', 'GeoAuto, XG'], array_column($appels, 1));
+        for ($i = 1; $i < count($appels); $i++) {
+            self::assertGreaterThanOrEqual(0.95, $appels[$i][0] - $appels[$i - 1][0], 'Une requête par seconde au plus');
+        }
+    }
+
+    public function testUnNouveauTravailReutiliseLesReponsesRecentes(): void
+    {
+        $this->journal = $this->site->nominatimSimule();
+        $id = $this->fiche('GeoNouvelle', 'N');
+        $client = $this->site->client('niveau9');
+        $this->terminer($client, $this->creer($client, [$id])['travail']);
+        $this->site->base->query("UPDATE gm_geoloc SET STATUT = 'N', LON = 0, LAT = 0 WHERE ID = $id");
+
+        $vue = $this->terminer($client, $this->creer($client, [$id])['travail']);
+
+        self::assertTrue($vue['dernier']['cache']);
+        self::assertCount(1, $this->appels());
+    }
+
+    public function testUnRefusDeDebitSuspendSansRienModifier(): void
+    {
+        $this->journal = $this->site->nominatimSimule();
+        $id = $this->fiche('GeoSaturee', 'N');
+        $client = $this->site->client('niveau9');
+        $travail = $this->creer($client, [$id])['travail'];
+
+        $vue = $this->json($client->post('/admin/geoloc_travail.php', ['action' => 'avancer', 'travail' => $travail]));
+        self::assertSame(['suspendu', 'debit'], [$vue['etat'], $vue['cause']]);
+        self::assertSame(['N', '0', '0'], $this->etat($id));
+
+        $this->json($client->post('/admin/geoloc_travail.php', ['action' => 'reprendre', 'travail' => $travail]));
+        $vue = $this->json($client->post('/admin/geoloc_travail.php', ['action' => 'avancer', 'travail' => $travail]));
+        self::assertSame('suspendu', $vue['etat']);
+        self::assertCount(1, $this->appels(), 'Aucune relance pendant la pause demandée');
+    }
+
+    public function testSansSessionLaReponseEstUnJsonIdentifiable(): void
+    {
+        $donnees = $this->json($this->site->client('nouveau')->get('/admin/geoloc_travail.php', ['action' => 'actif']), 401);
+        self::assertSame('session', $donnees['erreur']);
+    }
+
+    public function testLesActionsNonAutoriseesSontRefuseesSansAppel(): void
+    {
+        $this->journal = $this->site->nominatimSimule();
+        $id = $this->fiche('GeoNouvelle', 'N');
+        $admin = $this->site->client('niveau9');
+
+        self::assertSame('droits', $this->json($this->site->client('niveau6')->post('/admin/geoloc_travail.php', ['action' => 'creer', 'ids[0]' => $id]), 403)['erreur']);
+        self::assertSame('jeton', $this->json($admin->post('/admin/geoloc_travail.php', ['action' => 'creer', 'ids[0]' => $id, 'jeton' => 'faux']), 403)['erreur']);
+        self::assertSame('methode', $this->json($admin->get('/admin/geoloc_travail.php', ['action' => 'avancer', 'travail' => str_repeat('a', 32)]), 405)['erreur']);
+        self::assertSame('requete', $this->json($admin->post('/admin/geoloc_travail.php', ['action' => 'creer', 'ids[0]' => 'abc']), 400)['erreur']);
+        $travail = $this->creer($admin, [$id])['travail'];
+        self::assertSame('travail', $this->json($this->site->client('temoin')->post('/admin/geoloc_travail.php', ['action' => 'avancer', 'travail' => $travail]), 404)['erreur']);
+        self::assertSame([], $this->appels());
+    }
+
+    public function testDepuisUneFicheManuelleRienNEstEcritSansValidation(): void
+    {
+        $this->journal = $this->site->nominatimSimule();
+        $id = $this->fiche('GeoManuelle', 'M', 1.5, 45.5);
+        $client = $this->site->client('niveau9');
+
+        $reponse = $this->json($client->post('/admin/geoloc_travail.php', ['action' => 'rechercher', 'id' => $id]));
+        self::assertSame('proposition', $reponse['issue']);
+        self::assertSame(['M', '1.5', '45.5'], $this->etat($id));
+
+        $version = ['version_statut' => $reponse['fiche']['statut'], 'version_lon' => $reponse['fiche']['lon'], 'version_lat' => $reponse['fiche']['lat']];
+        $refus = $this->json($client->post('/admin/geoloc_travail.php', ['action' => 'remplacer', 'id' => $id, 'lon' => '9', 'lat' => '9'] + $version), 400);
+        self::assertSame('requete', $refus['erreur']);
+        self::assertSame(['M', '1.5', '45.5'], $this->etat($id));
+
+        $succes = $this->json($client->post('/admin/geoloc_travail.php', ['action' => 'remplacer', 'id' => $id, 'lon' => (string) $reponse['proposition']['lon'], 'lat' => (string) $reponse['proposition']['lat']] + $version));
+        self::assertSame('trouvee', $succes['issue']);
+        self::assertSame(['A', '2.3522', '48.8566'], $this->etat($id));
+        self::assertCount(1, $this->appels());
+    }
+
+    public function testDepuisUneFicheNonDefinieLeResultatEstEnregistre(): void
+    {
+        $this->journal = $this->site->nominatimSimule();
+        $id = $this->fiche('GeoNouvelle', 'N');
+        $reponse = $this->json($this->site->client('niveau9')->post('/admin/geoloc_travail.php', ['action' => 'rechercher', 'id' => $id]));
+        self::assertSame('trouvee', $reponse['issue']);
+        self::assertSame('A', $reponse['fiche']['statut']);
+        self::assertSame(['A', '2.3522', '48.8566'], $this->etat($id));
+    }
+
+    public function testUnePanneDuServiceEstSignaleeSansRienModifier(): void
+    {
+        $id = $this->fiche('GeoNouvelle', 'N');
+        $donnees = $this->json($this->site->client('niveau9')->post('/admin/geoloc_travail.php', ['action' => 'rechercher', 'id' => $id]), 503);
+        self::assertSame('panne', $donnees['erreur']);
+        self::assertSame(['N', '0', '0'], $this->etat($id));
+    }
 }
