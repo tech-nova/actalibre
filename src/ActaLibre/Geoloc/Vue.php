@@ -11,7 +11,7 @@ final class Vue
 {
     private const COMPTEURS = ['trouvee' => 'Trouvées', 'introuvable' => 'Introuvables', 'manuelle' => 'Manuelles conservées', 'a_verifier' => 'À vérifier'];
 
-    public static function entete(string $racine): string
+    public static function entete(?string $racine): string
     {
         $base = Filtre::html($racine . '/tools/');
         return '<link rel="stylesheet" href="' . $base . 'css/geoloc.css" type="text/css" />' . "\n"

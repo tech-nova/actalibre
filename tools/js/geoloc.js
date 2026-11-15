@@ -336,6 +336,90 @@
 		verifierReprise();
 	}
 
+	var MESSAGES_FICHE = {
+		introuvable: 'Nominatim ne connaît pas ce lieu. Les coordonnées actuelles sont conservées.',
+		sans_nouveau: 'Aucun nouveau résultat : les coordonnées automatiques actuelles sont conservées.',
+		manuelle: 'Cette fiche est devenue manuelle entre-temps : rechargez la page.',
+		modifiee: 'La fiche a été modifiée pendant la recherche : rechargez la page pour voir sa version actuelle.',
+		supprimee: 'Cette fiche a été supprimée.'
+	};
+
+	// Reporte la fiche enregistrée dans le formulaire sans toucher aux commentaires en cours de saisie.
+	function appliquerFiche(fiche) {
+		var lon = el('lon');
+		var lat = el('lat');
+		lon.value = lon.defaultValue = fiche.lon === null ? '' : fiche.lon;
+		lat.value = lat.defaultValue = fiche.lat === null ? '' : fiche.lat;
+		el('version_statut').value = fiche.statut;
+		el('version_lon').value = fiche.lon === null ? '' : fiche.lon;
+		el('version_lat').value = fiche.lat === null ? '' : fiche.lat;
+		el('geoloc-fiche-statut').textContent = LIBELLES[fiche.statut] || fiche.statut;
+		if (fiche.lon !== null && fiche.lat !== null) {
+			document.dispatchEvent(new CustomEvent('geoloc:coordonnees', { detail: { lon: parseFloat(fiche.lon), lat: parseFloat(fiche.lat) } }));
+		}
+	}
+
+	function resultatFiche(reponse) {
+		fenetre.progression(1, 1);
+		if (reponse.issue === 'trouvee') {
+			appliquerFiche(reponse.fiche);
+			fenetre.etat('Coordonnées trouvées et enregistrées : ' + reponse.fiche.lon + ', ' + reponse.fiche.lat
+				+ (reponse.cache ? ' (réponse récente réutilisée)' : '') + '. Vérifiez la position sur la carte.', false);
+			return;
+		}
+		if (reponse.issue === 'proposition') {
+			var valider = el('geoloc-remplacer');
+			fenetre.etat('Nominatim propose ' + reponse.proposition.lon + ', ' + reponse.proposition.lat + '. Les coordonnées manuelles actuelles ('
+				+ reponse.fiche.lon + ', ' + reponse.fiche.lat + ') ne sont pas modifiées sans votre validation.', false);
+			valider.hidden = false;
+			valider.onclick = function () {
+				valider.hidden = true;
+				fenetre.etat('Enregistrement…', true);
+				envoyer('remplacer', {
+					id: reponse.fiche.id, lon: reponse.proposition.lon, lat: reponse.proposition.lat,
+					version_statut: reponse.fiche.statut,
+					version_lon: reponse.fiche.lon === null ? '' : reponse.fiche.lon,
+					version_lat: reponse.fiche.lat === null ? '' : reponse.fiche.lat
+				}).then(function (suite) {
+					if (suite.issue === 'trouvee') {
+						appliquerFiche(suite.fiche);
+						fenetre.etat('Coordonnées manuelles remplacées par le résultat de Nominatim. Vérifiez la position sur la carte.', false);
+					} else {
+						fenetre.etat(MESSAGES_FICHE[suite.issue] || 'Rien n\'a été enregistré.', false);
+					}
+				}, function (erreur) {
+					fenetre.etat(erreur.message, false);
+				});
+			};
+			valider.focus();
+			return;
+		}
+		if ((reponse.issue === 'introuvable' || reponse.issue === 'sans_nouveau') && reponse.fiche) {
+			appliquerFiche(reponse.fiche);
+		}
+		fenetre.etat(MESSAGES_FICHE[reponse.issue] || 'Recherche terminée.', false);
+	}
+
+	function initFiche(bouton) {
+		bouton.hidden = false;
+		bouton.addEventListener('click', function () {
+			var lon = el('lon');
+			var lat = el('lat');
+			var message = el('geoloc-fiche-message');
+			if (lon.value !== lon.defaultValue || lat.value !== lat.defaultValue) {
+				message.textContent = 'Vous avez modifié les coordonnées sans les enregistrer : enregistrez la fiche, ou cliquez sur « Effacer », avant de lancer la recherche.';
+				return;
+			}
+			message.textContent = '';
+			fenetre.ouvrir(bouton, 1);
+			fenetre.boutons('fin');
+			fenetre.etat('Recherche en cours auprès de Nominatim…', true);
+			envoyer('rechercher', { id: bouton.getAttribute('data-id') }).then(resultatFiche, function (erreur) {
+				fenetre.etat(erreur.message || 'La recherche n\'a pas abouti. Les coordonnées actuelles sont conservées.', false);
+			});
+		});
+	}
+
 	function demarrer() {
 		dialogue = el('geoloc-dialogue');
 		if (!dialogue || typeof dialogue.showModal !== 'function') {
@@ -353,6 +437,10 @@
 		var formulaire = el('geoloc-selection');
 		if (formulaire) {
 			initListe(formulaire);
+		}
+		var recherche = el('geoloc-rechercher');
+		if (recherche) {
+			initFiche(recherche);
 		}
 	}
 

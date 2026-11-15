@@ -252,4 +252,73 @@ final class GeolocalisationParcoursTest extends TestCase
         self::assertLessThanOrEqual(100, $cases, 'Seules les lignes de la page affichée sont sélectionnables');
         self::assertStringContainsString('>Introuvable</td>', $corps);
     }
+
+    /** @return array<string,string> champs version_* du formulaire de la fiche */
+    private function version(Client $client, int $id): array
+    {
+        $corps = $client->get('/admin/gestgeoloc.php', ['id' => $id])->corps;
+        $version = [];
+        foreach (['version_statut', 'version_lon', 'version_lat'] as $champ) {
+            self::assertSame(1, preg_match('~name="' . $champ . '" id="' . $champ . '" value="([^"]*)"~', $corps, $m), $champ);
+            $version[$champ] = html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+        return $version;
+    }
+
+    /** @param array<string,string> $version */
+    private function enregistrer(Client $client, int $id, string $lon, string $lat, array $version): string
+    {
+        return $client->post('/admin/gestgeoloc.php', ['id' => $id, 'action' => 'submitted', 'lon' => $lon, 'lat' => $lat,
+            'noteN' => 'note n', 'noteM' => '', 'noteD' => '', 'noteV' => '', 'commune' => 'x'] + $version)->corps;
+    }
+
+    public function testLaFicheProposeLaRechercheNominatim(): void
+    {
+        $corps = $this->site->client('niveau9')->get('/admin/gestgeoloc.php', ['id' => $this->fiche('GeoNouvelle', 'N')])->corps;
+        self::assertStringContainsString('>Rechercher les coordonnées avec Nominatim</button>', $corps);
+        self::assertStringContainsString('id="geoloc-dialogue"', $corps);
+        self::assertStringContainsString('tools/js/geoloc.js', $corps);
+        self::assertStringContainsString('<td id="geoloc-fiche-statut">Non définie</td>', $corps);
+    }
+
+    public function testUnEnregistrementApresUnGeocodageEstRefuse(): void
+    {
+        $id = $this->fiche('GeoAuto', 'A', 1.5, 45.5);
+        $client = $this->site->client('niveau9');
+        $version = $this->version($client, $id);
+        $this->site->base->query("UPDATE gm_geoloc SET LON = 2.3522, LAT = 48.8566 WHERE ID = $id");
+
+        $corps = $this->enregistrer($client, $id, '1.5', '45.5', $version);
+
+        self::assertStringContainsString('a été modifiée depuis son ouverture', $corps);
+        self::assertSame(['A', '2.3522', '48.8566'], $this->etat($id));
+    }
+
+    public function testUnDeplacementManuelEnregistreLeStatutManuel(): void
+    {
+        $id = $this->fiche('GeoAuto', 'A', 1.5, 45.5);
+        $client = $this->site->client('niveau9');
+        $corps = $this->enregistrer($client, $id, '1.75', '45.25', $this->version($client, $id));
+        self::assertStringContainsString('Fiche enregistrée', $corps);
+        self::assertSame(['M', '1.75', '45.25'], $this->etat($id));
+    }
+
+    public function testUnEnregistrementDesSeulesNotesGardeLeStatut(): void
+    {
+        $id = $this->fiche('GeoAuto', 'A', 1.5, 45.5);
+        $client = $this->site->client('niveau9');
+        $version = $this->version($client, $id);
+        $this->enregistrer($client, $id, $version['version_lon'], $version['version_lat'], $version);
+        self::assertSame(['A', '1.5', '45.5'], $this->etat($id));
+        self::assertSame('note n', $this->site->base->query("SELECT NOTE_N FROM gm_geoloc WHERE ID = $id")->fetch_row()[0]);
+    }
+
+    public function testDesCoordonneesHorsBornesSontRefusees(): void
+    {
+        $id = $this->fiche('GeoAuto', 'A', 1.5, 45.5);
+        $client = $this->site->client('niveau9');
+        $corps = $this->enregistrer($client, $id, '200', '45.5', $this->version($client, $id));
+        self::assertStringContainsString('Coordonnées invalides', $corps);
+        self::assertSame(['A', '1.5', '45.5'], $this->etat($id));
+    }
 }
