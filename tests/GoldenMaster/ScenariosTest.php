@@ -8,8 +8,9 @@ use PHPUnit\Framework\TestCase;
 final class ScenariosTest extends TestCase
 {
     private const RACINE = __DIR__ . '/../..';
-    // L’installation et la mise à jour ont leurs propres parcours. Les pages de diagnostic dépendent du serveur.
-    private const PAGES_EXCLUES = ['/install.php', '/update.php', '/admin/protection.php', '/admin/serv_params.php', '/admin/serv_params_accents.inc.php'];
+    // L’installation, la mise à jour et les opérations JSON de géolocalisation ont leurs propres parcours.
+    // Les pages de diagnostic dépendent du serveur.
+    private const PAGES_EXCLUES = ['/install.php', '/update.php', '/admin/geoloc_travail.php', '/admin/protection.php', '/admin/serv_params.php', '/admin/serv_params_accents.inc.php'];
 
     /** @return list<array<string,mixed>> */
     private static function scenarios(): array

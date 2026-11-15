@@ -36,11 +36,9 @@ $leid=getparam('id');
 if ($id > 0)  // édition
 	{  //
 	$action = 'Modification';
-	$request = "select *"
-				." from ".EA_DB."_geoloc "
-				." where ID =".$id;
-				//echo '<P>'.$request;
-	if ($result = EA_sql_query($request))
+	$request = "select ID, COMMUNE, DEPART, CAST(LON AS CHAR) as LON, CAST(LAT AS CHAR) as LAT, STATUT, NOTE_N, NOTE_M, NOTE_D, NOTE_V"
+				." from ".EA_DB."_geoloc where ID = ?";
+	if ($result = \ActaLibre\Db\Requete::executer(EA_sql_which_link(), $request, [(int)$id]))
 		{
 		// Identifiant inconnu : fiche vide.
 		$row = (EA_sql_fetch_array($result) ?: []) + array_fill_keys(['COMMUNE','DEPART','LON','LAT','STATUT','NOTE_N','NOTE_M','NOTE_D','NOTE_V'],'');
@@ -61,9 +59,8 @@ if ($id > 0)  // édition
 	$zoom = 11;	
 	if ($lon==0 and $lat==0 and GEO_CENTRE_CARTE <> "")
 		{
-		$georeq = "select LON,LAT from ".EA_DB."_geoloc where COMMUNE = '".sql_quote(GEO_CENTRE_CARTE)."' and STATUT in ('A','M')";
-		$geores =  EA_sql_query($georeq);
-		if ($geo = EA_sql_fetch_array($geores))
+		$geores = \ActaLibre\Db\Requete::executer(EA_sql_which_link(), "select CAST(LON AS CHAR) as LON, CAST(LAT AS CHAR) as LAT from ".EA_DB."_geoloc where COMMUNE = ? and STATUT in ('A','M')", [GEO_CENTRE_CARTE]);
+		if ($geores and $geo = EA_sql_fetch_array($geores))
 			{
 			$lon = $geo['LON'];
 			$lat = $geo['LAT'];
@@ -88,6 +85,7 @@ if ($id > 0)  // édition
 	$carto->zoom((int)$zoom);
 
 	$JSheader = $carto->enTete($root);
+	$JSheader .= \ActaLibre\Geoloc\Vue::entete($root);
 	}
 
 open_page("Gestion des localités",$root,null,null,$JSheader);
@@ -104,58 +102,53 @@ menu_datas('L');
 
 if ($id > 0 and $act=="del")
 	{
-	$reqmaj = "delete from ".EA_DB."_geoloc where ID=".$id.";";
-	if  ($result = EA_sql_query($reqmaj,$a_db))
+	if (\ActaLibre\Db\Requete::executer(EA_sql_which_link(), "delete from ".EA_DB."_geoloc where ID = ?", [(int)$id]))
 		{
-		//writelog('Suppression localité #'.$id,$lelogin,1);
 		echo '<p><b>FICHE SUPPRIMEE.</b></p>';
 		$id=0;
 		}
 	 else
 		{
 		echo ' -> Erreur : ';
-		erreur_sql($reqmaj);
+		erreur_sql("delete from ".EA_DB."_geoloc");
 		}
 	}
 
 	// Données postées -> ajouter ou modifier
 if (getparam('action') == 'submitted')
 	{
-	$ok = true;
-	// validations si besoin
-	if ($ok)
+	$missingargs = false;
+	$version = [
+		'statut' => (string)getparam('version_statut'),
+		'lon' => getparam('version_lon') === '' ? null : (string)getparam('version_lon'),
+		'lat' => getparam('version_lat') === '' ? null : (string)getparam('version_lat'),
+		];
+	$lonSaisie = trim((string)getparam('lon'));
+	$latSaisie = trim((string)getparam('lat'));
+	if (!is_numeric($lonSaisie) or !is_numeric($latSaisie) or !\ActaLibre\Geoloc\Moteur::valides((float)$lonSaisie, (float)$latSaisie))
 		{
-		$mes = "";
-		if (getparam('lon')<>$lon or getparam('lat')<>$lat)
-			$newstatut = 'M';
-			else
-			$newstatut = $statut;
-		$missingargs=false;
-		$reqmaj = "update ".EA_DB."_geoloc set ";
-		$reqmaj = $reqmaj.
-				 "NOTE_N = '".sql_quote(getparam('noteN'))."', ".
-				 "NOTE_M = '".sql_quote(getparam('noteM'))."', ".
-				 "NOTE_D = '".sql_quote(getparam('noteD'))."', ".
-				 "NOTE_V = '".sql_quote(getparam('noteV'))."', ".
-				 "STATUT = '".sql_quote($newstatut)."', ".
-				 "LON    = '".sql_quote(getparam('lon'))."', ".
-				 "LAT    = '".sql_quote(getparam('lat'))."' ".
-			 " where ID=".$id.";";
-			
-	  //echo "<p>".$reqmaj."</p>";
-		if  ($result = EA_sql_query($reqmaj))
+		echo '<p><b>Coordonnées invalides : la longitude doit être comprise entre -180 et 180, la latitude entre -90 et 90. Rien n\'a été enregistré.</b></p>';
+		}
+	 else
+		{
+		$deplacee = $version['lon'] === null || $version['lat'] === null
+			|| abs((float)$lonSaisie - (float)$version['lon']) > 1e-7 || abs((float)$latSaisie - (float)$version['lat']) > 1e-7;
+		$notes = ['N' => (string)getparam('noteN'), 'M' => (string)getparam('noteM'), 'D' => (string)getparam('noteD'), 'V' => (string)getparam('noteV')];
+		if (geoloc_fiches()->enregistrerFormulaire((int)$id, $version, (float)$lonSaisie, (float)$latSaisie, $deplacee ? 'M' : $version['statut'], $notes))
 			{
-			// echo '<p>'.EA_sql_error().'<br />'.$reqmaj.'</p>';
-			echo '<p><b>Fiche enregistrée'.$mes.'.</b></p>';
-			$id = 0;
+			echo '<p><b>Fiche enregistrée.</b></p>';
 			}
-		  else
+		 else
 			{
-			echo ' -> Erreur : ';
-			erreur_sql($reqmaj);
+			$actuelle = geoloc_fiches()->lire((int)$id);
+			echo '<p><b>La fiche a été modifiée depuis son ouverture, par exemple par une géolocalisation : rien n\'a été enregistré.</b><br />';
+			if ($actuelle !== null)
+				echo 'Valeurs actuelles : '.\ActaLibre\Securite\Filtre::html(\ActaLibre\Geoloc\Statut::libelle($actuelle['statut'])).', longitude '.\ActaLibre\Securite\Filtre::html((string)$actuelle['lon']).', latitude '.\ActaLibre\Securite\Filtre::html((string)$actuelle['lat']).'.<br />';
+			echo 'Valeurs que vous aviez saisies : longitude '.\ActaLibre\Securite\Filtre::html($lonSaisie).', latitude '.\ActaLibre\Securite\Filtre::html($latSaisie).'. Rouvrez la fiche pour recommencer.</p>';
 			}
 		}
-  }
+	$id = 0;
+	}
 
 //Si pas tout les arguments nécessaire, on affiche le formulaire
 if((int)$id<>0 and $missingargs)
@@ -173,7 +166,7 @@ if((int)$id<>0 and $missingargs)
 	echo " <tr>\n";
 	echo "  <td align='right'>Longitude : </td>\n";
 	echo '  <td><input type="text" name="lon" id="lon" size="10" value="'.\ActaLibre\Securite\Filtre::stocke($row['LON']).'" />'."</td>\n";
-	echo '  <td rowspan="4">';
+	echo '  <td rowspan="5">';
 	if (isset($carto)) echo $carto->afficher();
 	echo "</td>\n";
 	echo " </tr>\n";
@@ -182,11 +175,15 @@ if((int)$id<>0 and $missingargs)
 	echo "  <td align='right'>Latitude : </td>\n";
 	echo '  <td><input type="text" name="lat" id="lat" size="10" value="'.\ActaLibre\Securite\Filtre::stocke($row['LAT']).'" />'."</td>\n";
 	echo " </tr>\n";
+	echo " <tr>\n";
+	echo "  <td></td>\n";
+	echo '  <td><button type="button" id="geoloc-rechercher" data-id="'.(int)$id.'" hidden>Rechercher les coordonnées avec Nominatim</button>'
+		.' <span id="geoloc-fiche-message" role="status"></span></td>'."\n";
+	echo " </tr>\n";
 
-	$ast= ["M" => "Manuelle", "N" => "Non définie","A" => "Automatique"];
 	echo " <tr>\n";
 	echo "  <td align='right'>Géolocalisation : </td>\n";
-	echo '  <td>'.($ast[$statut] ?? '')."</td>\n";
+	echo '  <td id="geoloc-fiche-statut">'.\ActaLibre\Geoloc\Statut::libelle((string)$statut)."</td>\n";
 	echo " </tr>\n";
 
 	echo " <tr>\n";
@@ -217,7 +214,10 @@ if((int)$id<>0 and $missingargs)
 	 echo '  <input type="hidden" name="id" value="'.\ActaLibre\Securite\Filtre::html($id).'" />';
 	 echo '  <input type="hidden" name="commune" value="'.\ActaLibre\Securite\Filtre::stocke($commune).'" />';
 	 echo '  <input type="hidden" name="action" value="submitted" />';
-	 echo '  <a href="aide/geoloc.html" target="_blank">Aide</a>&nbsp;';
+	 // La version vient de la lecture qui a rempli les champs visibles : une seconde lecture pourrait porter une version plus récente que les coordonnées affichées.
+	 foreach (['statut' => 'STATUT', 'lon' => 'LON', 'lat' => 'LAT'] as $champ => $colonne)
+	   echo '  <input type="hidden" name="version_'.$champ.'" id="version_'.$champ.'" value="'.\ActaLibre\Securite\Filtre::html((string)($row[$colonne] ?? '')).'" />';
+	 echo '  <a href="aide/geolocalisation.html" target="_blank">Aide</a>&nbsp;';
 	 echo '  <input type="reset" value=" Effacer " />'."\n";
 	 echo " </td><td  colspan='2' align=\"left\">\n";
 	 echo ' &nbsp; <input type="submit" value=" *** ENREGISTRER *** " />'."\n";
@@ -228,6 +228,7 @@ if((int)$id<>0 and $missingargs)
 	 echo " </td></tr>\n";
 	 echo "</table>\n";
 	 echo "</form>\n";
+	 echo \ActaLibre\Geoloc\Vue::dialogue($root.'/admin/geoloc_travail.php');
   }
  else
   {

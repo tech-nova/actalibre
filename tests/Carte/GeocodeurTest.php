@@ -101,4 +101,68 @@ final class GeocodeurTest extends TestCase
     {
         self::assertSame('ActaLibre/4.0.2 (https://exemple.org)', Geocodeur::identifiant('4.0.2', "https://exemple.org\r\nX-Autre: valeur"));
     }
+
+    public function testUnRefusDeDebitDonneLaPauseDemandee(): void
+    {
+        try {
+            Geocodeur::controler(['HTTP/1.1 429 Too Many Requests', 'Retry-After: 120', 'Content-Type: application/json']);
+            self::fail('Un refus de débit est signalé');
+        } catch (\ActaLibre\Carte\RefusDebit $refus) {
+            self::assertSame(120, $refus->attente);
+        }
+    }
+
+    public function testUnServiceIndisponibleSansDelaiEstUnRefusSansAttente(): void
+    {
+        try {
+            Geocodeur::controler(['HTTP/1.1 503 Service Unavailable']);
+            self::fail('Un refus est signalé');
+        } catch (\ActaLibre\Carte\RefusDebit $refus) {
+            self::assertNull($refus->attente);
+        }
+    }
+
+    public function testUneAutreErreurHttpEstUnePanne(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('HTTP 500');
+        Geocodeur::controler(['HTTP/1.1 500 Internal Server Error']);
+    }
+
+    public function testApresUneRedirectionSeulLeDernierStatutCompte(): void
+    {
+        Geocodeur::controler(['HTTP/1.1 301 Moved Permanently', 'Location: https://exemple.org/', 'HTTP/1.1 200 OK']);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testUnRefusTransmisParLeTransportGardeSonType(): void
+    {
+        $geocodeur = new Geocodeur('https://exemple.org/search', static function (string $url): string {
+            throw new \ActaLibre\Carte\RefusDebit('trop vite', 30);
+        });
+        $this->expectException(\ActaLibre\Carte\RefusDebit::class);
+        $geocodeur->chercher('Vauclairmont');
+    }
+
+    /** @return iterable<string, array{string, ?int}> */
+    public static function datesRetryAfter(): iterable
+    {
+        yield 'date IMF dix minutes plus tard' => ['Sun, 15 Nov 2026 10:10:00 GMT', 600];
+        yield 'format RFC 850 obsolète' => ['Sunday, 15-Nov-26 10:02:00 GMT', 120];
+        yield 'format asctime obsolète' => ['Sun Nov 15 10:00:30 2026', 30];
+        yield 'date déjà passée' => ['Sun, 15 Nov 2026 09:00:00 GMT', 0];
+        yield 'valeur illisible' => ['bientôt', null];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('datesRetryAfter')]
+    public function testUnRetryAfterEnDateDonneLeDelaiRestant(string $valeur, ?int $attendu): void
+    {
+        $maintenant = (new \DateTimeImmutable('2026-11-15 10:00:00', new \DateTimeZone('UTC')))->getTimestamp();
+        try {
+            Geocodeur::controler(['HTTP/1.1 429 Too Many Requests', 'Retry-After: ' . $valeur], $maintenant);
+            self::fail('Un refus de débit est signalé');
+        } catch (\ActaLibre\Carte\RefusDebit $refus) {
+            self::assertSame($attendu, $refus->attente);
+        }
+    }
 }

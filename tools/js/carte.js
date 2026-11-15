@@ -42,6 +42,11 @@
 					document.getElementById('lon').value = position.lng;
 					document.getElementById('lat').value = position.lat;
 				});
+				document.addEventListener('geoloc:coordonnees', function (evenement) {
+					var position = [evenement.detail.lat, evenement.detail.lon];
+					marqueur.setLatLng(position);
+					carte.panTo(position);
+				});
 			}
 			groupe.addLayer(marqueur);
 		});

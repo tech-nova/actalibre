@@ -11,7 +11,8 @@ final class ServeurApacheJetable
     /** @param list<string> $reglagesPhp */
     public static function demarrer(string $racine, bool $sousDossier, array $reglagesPhp = [], bool $proteger = true): self
     {
-        if (!is_file('/usr/lib/apache2/modules/libphp8.3.so')) { throw new \RuntimeException('Module Apache PHP 8.3 indispensable au contrôle.'); }
+        // Contrôle limité à PHP 8.4 pendant le développement ; les autres versions (8.2 à 8.5) seront vérifiées lors de la stabilisation.
+        if (!is_file('/usr/lib/apache2/modules/libphp8.4.so')) { throw new \RuntimeException('Module Apache PHP 8.4 indispensable au contrôle.'); }
         $socket=stream_socket_server('tcp://127.0.0.1:0',$errno,$message);
         if ($socket === false) { throw new \RuntimeException('Port de test indisponible.'); }
         $nom=stream_socket_get_name($socket,false); fclose($socket);

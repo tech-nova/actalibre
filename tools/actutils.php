@@ -2175,7 +2175,7 @@ function maj_stats($xtyp, $T0, $path, $mode, $com="", $dep="")
 		  {
 			stats_1_comm($xtyp,$com);
 			if ($mode=="C")
-				geoloc_1_com($com,$dep);
+				geoloc_fiches()->creerManquante($com,$dep);
 		  }
 		else
 			{
@@ -2201,7 +2201,7 @@ function maj_stats($xtyp, $T0, $path, $mode, $com="", $dep="")
 					{
 					stats_1_comm($xtyp,$lacom);
 					my_flush(100); // Assure un affichage régulier
-					geoloc_1_com($lacom,$ledep);
+					geoloc_fiches()->creerManquante($lacom,$ledep);
 					}
 				$timeisup = (time()-$T0>=$Max_time);
 				}
@@ -2211,34 +2211,74 @@ function maj_stats($xtyp, $T0, $path, $mode, $com="", $dep="")
 		  if ($timeisup)
 		    {
 				echo "<p><b>Mise à jour INCOMPLETE des statistiques des ".$typ." </b></p>";
-				//echo "<p>Pour continuer le calcul des statistiques cliquez le lien suivant :<br>";
 				echo '<a href="'.Filtre::html($path."/maj_sums.php".'?xtyp='.urlencode($xtyp).'&mode=N&com='.urlencode($lacom).'&'.\ActaLibre\Securite\Jeton::lien()).'">'."Cliquez ici pour CONTINUER le recalcul de ces statistiques"."</a></p>";
 		    }
 		    else
 				{
 				echo "<p><b>Mise à jour globale des statistiques des ".$typ." terminée.</b></p>";
+				signaler_sans_coordonnees();
 				}
 			}
 			else
+			{
 			echo "<p><b>Les statistiques ont été recalculées.</b></p>";
+			if ($mode=="C")
+				signaler_sans_coordonnees($com,(string)$dep);
+			}
 
 		}
 	}
 
 //----------------------------------------------------------------------------
 
-function geocoder_commune($com,$dep)
-// Rend les coordonnées d'une commune (0 et 0 si introuvable), ou null si le service ne répond pas.
+function geoloc_stockage(): \ActaLibre\Geoloc\Stockage
 	{
-	static $geocodeur = null;
-	$geocodeur ??= new \ActaLibre\Carte\Geocodeur(
-		defined('GEOCODEUR_URL') ? GEOCODEUR_URL : \ActaLibre\Carte\Geocodeur::ADRESSE,
-		null,
-		\ActaLibre\Carte\Geocodeur::identifiant(ACTALIBRE_VERSION,adresse_publique())
+	return new \ActaLibre\Geoloc\Stockage(dirname(__DIR__).'/tmp/actalibre/geocodage');
+	}
+
+function geoloc_horloge(): \Closure
+	{
+	return static fn (): float => microtime(true);
+	}
+
+function geoloc_adresse(): string
+	{
+	return defined('GEOCODEUR_URL') ? (string)GEOCODEUR_URL : \ActaLibre\Carte\Geocodeur::ADRESSE;
+	}
+
+function geoloc_limite(): \ActaLibre\Geoloc\LimiteDebit
+	{
+	return new \ActaLibre\Geoloc\LimiteDebit(geoloc_stockage(), geoloc_horloge(), static function (float $secondes): void { usleep((int)ceil($secondes * 1000000)); });
+	}
+
+function geoloc_moteur(): \ActaLibre\Geoloc\Moteur
+	{
+	$adresse = geoloc_adresse();
+	$geocodeur = new \ActaLibre\Carte\Geocodeur($adresse, null, \ActaLibre\Carte\Geocodeur::identifiant(ACTALIBRE_VERSION,adresse_publique()));
+	return new \ActaLibre\Geoloc\Moteur(
+		geoloc_fiches(),
+		new \ActaLibre\Geoloc\Cache(geoloc_stockage(), geoloc_horloge(), $adresse),
+		geoloc_limite(),
+		static fn (string $requete): ?array => $geocodeur->chercher($requete)
 		);
+	}
+
+function geoloc_travaux(): \ActaLibre\Geoloc\Travaux
+	{
+	global $dbname;
+	return new \ActaLibre\Geoloc\Travaux(geoloc_stockage(), geoloc_horloge(), (string)$dbname.'/'.EA_DB);
+	}
+
+//------------------------------------------------------------------------------
+
+function geocoder_commune($com,$dep)
+// Test du service (paramètres, installation) : rend des coordonnées (0 et 0 si introuvable), ou null en cas de panne.
+// Il passe par la même limite de débit que les travaux de géolocalisation.
+	{
+	$geocodeur = new \ActaLibre\Carte\Geocodeur(geoloc_adresse(), null, \ActaLibre\Carte\Geocodeur::identifiant(ACTALIBRE_VERSION,adresse_publique()));
 	try
 		{
-		return $geocodeur->chercher($com.", ".$dep) ?? ['lon'=>0,'lat'=>0];
+		return geoloc_limite()->executer(static fn (): ?array => $geocodeur->chercher($com.", ".$dep)) ?? ['lon'=>0,'lat'=>0];
 		}
 	catch (\RuntimeException)
 		{
@@ -2248,49 +2288,26 @@ function geocoder_commune($com,$dep)
 
 //------------------------------------------------------------------------------
 
-function geoloc_1_com($com,$dep)
+function geoloc_fiches(): \ActaLibre\Geoloc\Fiches
 	{
-	$reqbase = "select STATUT from ".EA_DB."_geoloc where COMMUNE = '".sql_quote($com)."' and DEPART = '".sql_quote($dep)."'";
-	$res = EA_sql_query($reqbase);
-	if ($res and EA_sql_num_rows($res)!=0)
-		{
-		$ligne = EA_sql_fetch_array($res);
-		if ($ligne['STATUT']=='N')
-			$rech = 2; // pas trouvé la dernière fois
-			else
-			$rech = 0; // présent
-		}
-		else
-		$rech = 1; // absent
-	if ($rech>=1) // il faut geocoder
-		{
-		//echo "<p>Recherche de ".$com."/".$dep;
-		$coord = geocoder_commune($com,$dep);
-		if ($coord === null)
-			{
-			static $panne_signalee = false;
-			if (!$panne_signalee)
-				echo "<p>Le service de géocodage ne répond pas : les lieux restants seront recherchés plus tard.</p>";
-			$panne_signalee = true;
-			return;
-			}
-		if ($coord['lon']==0 and $coord['lat']==0)
-			$statut = 'N'; // Non trouvé
-			else
-			$statut = 'A'; // Automatique
-		if ($rech==1)
-			$reqmaj = "insert into ".EA_DB."_geoloc (COMMUNE,DEPART,LON,LAT,STATUT)"
-								." values ('".sql_quote($com)."','".sql_quote($dep)."',".$coord['lon'].",".$coord['lat'].",'".$statut."')";
-			else
-			$reqmaj = "update ".EA_DB."_geoloc set LON=".$coord['lon'].", LAT=".$coord['lat'].",STATUT='".$statut."'"
-								." where COMMUNE = '".sql_quote($com)."' and DEPART = '".sql_quote($dep)."'";
-		$result = EA_sql_query($reqmaj);
-		//echo $reqmaj;
-		if ($coord['lat']<>0)
-			echo "<p>".Filtre::stocke($com.show_depart($dep))." a été géocodé en ".Filtre::html((string)$coord['lon']).",".Filtre::html((string)$coord['lat'])."</p>";
-			else
-			echo "<p>".Filtre::stocke($com.show_depart($dep))." n'a pu être géocodé</p>";
-		}
+	static $fiches = null;
+	return $fiches ??= new \ActaLibre\Geoloc\Fiches(EA_sql_which_link(), EA_DB);
+	}
+
+//------------------------------------------------------------------------------
+
+function signaler_sans_coordonnees(?string $commune = null, string $depart = ''): void
+// Signale les localités sans coordonnées après un import ou un recalcul : aucun service tiers n'est appelé.
+	{
+	global $root, $userlevel;
+	$fiches = geoloc_fiches();
+	$nombre = $commune === null ? $fiches->compterSansCoordonnees() : ($fiches->estSansCoordonnees($commune, $depart) ? 1 : 0);
+	if ($nombre === 0)
+		return;
+	echo '<p>'.($nombre === 1 ? "1 localité n'a pas de coordonnées géographiques." : $nombre." localités n'ont pas de coordonnées géographiques.");
+	if ((int)$userlevel >= 9)
+		echo ' <a href="'.Filtre::html($root.'/admin/listgeolocs.php').'">Géolocaliser les localités</a>';
+	echo "</p>\n";
 	}
 
 //------------------------------------------------------------------------------

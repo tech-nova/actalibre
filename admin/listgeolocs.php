@@ -27,8 +27,9 @@ while ($userlevel<9)
   {
   login($root);
   }
+exiger_jeton_si(getparam('action') == 'recenser');
 
-open_page(SITENAME." : Liste des localités (communes et paroisses)",$root);
+open_page(SITENAME." : Liste des localités (communes et paroisses)",$root,null,null,\ActaLibre\Geoloc\Vue::entete($root));
 
 navadmin($root,"Liste des localités");
 
@@ -42,6 +43,30 @@ echo '<div id="col_main_adm">';
 // Lister les actes
 
 menu_datas('L');
+
+if (getparam('action') == 'recenser' and $_SERVER['REQUEST_METHOD'] === 'POST')
+	{
+	$recensement = new \ActaLibre\Geoloc\Recensement(EA_sql_which_link(), EA_DB, geoloc_fiches());
+	$etat = ['table' => (int)($_POST['recensement_table'] ?? 0), 'apres' => is_string($_POST['recensement_apres'] ?? null) ? $_POST['recensement_apres'] : '', 'crees' => 0, 'termine' => false];
+	$crees = 0;
+	$limite = time() + max(5, (int)ini_get('max_execution_time') - 10);
+	while (!$etat['termine'] and time() < $limite)
+		{
+		$etat = $recensement->tranche($etat['table'], $etat['apres']);
+		$crees += $etat['crees'];
+		}
+	echo '<p>'.$crees.' localité(s) ajoutée(s) sans coordonnées.</p>';
+	if ($etat['termine'])
+		echo '<p><b>Recensement terminé.</b></p>';
+	 else
+		{
+		echo '<form method="post" action="listgeolocs.php">'.\ActaLibre\Securite\Jeton::champ();
+		echo '<input type="hidden" name="action" value="recenser" />';
+		echo '<input type="hidden" name="recensement_table" value="'.(int)$etat['table'].'" />';
+		echo '<input type="hidden" name="recensement_apres" value="'.\ActaLibre\Securite\Filtre::html($etat['apres']).'" />';
+		echo '<p>Recensement incomplet. <button type="submit">Continuer le recensement</button></p></form>';
+		}
+	}
 
 echo '<h2>Localités connues du site '.\ActaLibre\Securite\Filtre::stocke(SITENAME).'</h2>';
 
@@ -59,6 +84,9 @@ while ($row = EA_sql_fetch_row($result))
   else
   	$alphabet .= '<a href="'.\ActaLibre\Securite\Filtre::html($baselink.'?xord='.urlencode($xord).'&init='.urlencode($row[0])).'">'.\ActaLibre\Securite\Filtre::stocke($row[0]).'</a> ';
   }
+echo '<form method="post" action="listgeolocs.php" class="geoloc-recensement">'.\ActaLibre\Securite\Jeton::champ();
+echo '<input type="hidden" name="action" value="recenser" />';
+echo '<p>Des localités présentes dans les actes peuvent manquer à cette liste. <button type="submit">Recenser les localités des actes</button> (aucun service extérieur n\'est contacté)</p></form>';
 echo '<p align="center">'.$alphabet.'</p>';
 
 if ($init=="")
@@ -83,7 +111,7 @@ if ($xord =="C")
 	}
  elseif ($xord =="S")
 	{
-	$order = "find_in_set(STATUT,'N,M,A')";
+	$order = "find_in_set(STATUT,'N,I,M,A'), COMMUNE, DEPART";
 	$hgeoloc = '<b>Géolocalisation</b>';
 	}
  else
@@ -128,36 +156,46 @@ if ($xord =="C")
 	  {
 	  if ($listpages<>"")
 	  	echo '<p>'.$listpages.'</p>';
+	  echo '<noscript><p>La mise à jour groupée des coordonnées nécessite JavaScript. La liste reste consultable.</p></noscript>';
+	  echo '<p id="geoloc-reprise" hidden><span id="geoloc-reprise-texte"></span> <button type="button" id="geoloc-reprendre">Reprendre la mise à jour</button></p>';
+	  echo '<form id="geoloc-selection" autocomplete="off">';
+	  echo '<p class="geoloc-commandes" hidden><button type="button" id="geoloc-cocher-tout">Tout sélectionner</button> ';
+	  echo '<button type="button" id="geoloc-cocher-sans">Sélectionner les communes non géolocalisées</button></p>';
 	  $i = 1+($page-1)*MAX_PAGE_ADM;
-	  echo '<table summary="Liste des localités">';
+	  echo '<table summary="Liste des localités" class="geoloc-liste">';
 	  echo '<tr class="rowheader">';
+	  echo '<th class="geoloc-case"><input type="checkbox" id="geoloc-tout" aria-label="Tout sélectionner sur cette page" /></th>';
 	  echo '<th> Tri : </th>';
 	  echo '<th>'.$hcommune.'</th>';
 	  echo '<th>'.$hdepart.'</th>';
 	  echo '<th>'.$hgeoloc.'</th>';
 	  echo '</tr>';
-
-    
 	  while ($ligne = EA_sql_fetch_array($result))
 			{
-			echo '<tr class="row'.(fmod($i,2)).'">';
-			echo '<td>'.$i.'. </td>';
+			$statut = (string)$ligne['STATUT'];
+			echo '<tr class="row'.(fmod($i,2)).'" data-id="'.(int)$ligne['ID'].'" data-statut="'.\ActaLibre\Securite\Filtre::html($statut).'">';
 			$lenom = $ligne['COMMUNE'];
+			$designation = trim((string)$lenom) === '' ? 'localité sans nom' : $lenom;
+			echo '<td class="geoloc-case"><input type="checkbox" name="ids[]" value="'.(int)$ligne['ID'].'" aria-label="Sélectionner '.\ActaLibre\Securite\Filtre::stocke($designation.((string)$ligne['DEPART'] === '' ? '' : ', '.$ligne['DEPART'])).'" /></td>';
+			echo '<td>'.$i.'. </td>';
 			if (trim($lenom)=="") $lenom = '&lt;non précisé&gt;';
 			echo '<td><a href="'.$root.'/admin/gestgeoloc.php?id='.(int)$ligne['ID'].'">'.\ActaLibre\Securite\Filtre::stocke($lenom).'</a> </td>';
 			echo '<td>'.\ActaLibre\Securite\Filtre::stocke($ligne['DEPART']).' </td>';
-			$ast= ["M" => "Manuelle", "N" => "Non définie","A" => "Auto"];
-			echo '<td align="center">'.$ast[$ligne['STATUT']].'</td>';
+			echo '<td align="center" class="geoloc-statut">'.\ActaLibre\Geoloc\Statut::libelle($statut).'</td>';
 			echo '</tr>';
 			$i++;
 			}
 	  echo '</table>';
+	  echo '<p class="geoloc-pied" hidden>Coordonnées géographiques des éléments sélectionnés : <button type="button" id="geoloc-maj" disabled aria-describedby="geoloc-compte">Mettre à jour</button> ';
+	  echo '<span id="geoloc-compte">Aucune localité sélectionnée : cochez au moins une ligne.</span></p>';
+	  echo '</form>';
+	  echo \ActaLibre\Geoloc\Vue::dialogue($root.'/admin/geoloc_travail.php');
 	  if ($listpages<>"")
 	  	echo '<p>'.$listpages.'</p>';
 	  }
 	 else
 	  {
-	  msg('Aucune localité géocodée');
+	  msg('Aucune localité : utilisez « Recenser les localités des actes ».');
 	  }
 
 echo '</div>';

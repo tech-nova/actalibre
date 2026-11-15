@@ -40,6 +40,9 @@ final class SiteJetable
     private readonly string $infrastructure;
     /** @var array<string,string> table gm_* => SHOW CREATE TABLE au moment de l'instantané */
     private array $schemas = [];
+    /** @var resource|null */
+    private $nominatim = null;
+    private int $portNominatim = 0;
 
     /**
      * @param array{hote:string,nom:string,utilisateur:string,passe:string} $connexion
@@ -180,8 +183,50 @@ final class SiteJetable
         $this->base->query("UPDATE gm_log SET DATE = '2024-01-15 12:00:00'");
     }
 
+    /** Démarre (une fois) le Nominatim simulé, y dirige le site et rend le journal des appels, vidé. */
+    public function nominatimSimule(): string
+    {
+        $journal = $this->racine . '-nominatim.log';
+        if (!is_resource($this->nominatim)) {
+            $sonde = stream_socket_server('tcp://127.0.0.1:0');
+            $this->portNominatim = (int) substr(strrchr(stream_socket_get_name($sonde, false), ':'), 1);
+            fclose($sonde);
+            $this->nominatim = proc_open(
+                [PHP_BINARY, '-S', '127.0.0.1:' . $this->portNominatim, __DIR__ . '/nominatim_simule.php'],
+                [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+                $tubes,
+                null,
+                ['NOMINATIM_JOURNAL' => $journal]
+            );
+            $limite = microtime(true) + 5;
+            while (($connexion = @fsockopen('127.0.0.1', $this->portNominatim, $code, $message, 0.2)) === false) {
+                self::exiger(microtime(true) < $limite, 'Le Nominatim simulé ne répond pas');
+                usleep(100000);
+            }
+            fclose($connexion);
+        }
+        $this->geocodeur('http://127.0.0.1:' . $this->portNominatim . '/search');
+        file_put_contents($journal, '');
+        return $journal;
+    }
+
+    /** Change l'adresse du service de géocodage dans la configuration du site. */
+    public function geocodeur(string $adresse): void
+    {
+        $fichier = $this->racine . '/_config/connect.inc.php';
+        $source = preg_replace("~define\('GEOCODEUR_URL', '[^']*'\);~", "define('GEOCODEUR_URL', " . var_export($adresse, true) . ');', (string) file_get_contents($fichier), 1, $remplacements);
+        self::exiger($remplacements === 1, 'GEOCODEUR_URL absent de la configuration de test');
+        file_put_contents($fichier, $source);
+    }
+
     public function arreter(): void
     {
+        if (is_resource($this->nominatim)) {
+            proc_terminate($this->nominatim);
+            proc_close($this->nominatim);
+            $this->nominatim = null;
+        }
+        @unlink($this->racine . '-nominatim.log');
         $this->arreterServeur();
         $this->supprimerTables();
         // Un autre site du même processus ne doit pas effacer l'instantané du site partagé.
@@ -382,7 +427,7 @@ final class SiteJetable
         }
     }
 
-    /** Des coordonnées déjà connues évitent tout géocodage vers Google quand les statistiques se calculent. */
+    /** Des coordonnées manuelles connues donnent une carte d'accueil déjà garnie. */
     private function enregistrerCoordonnees(string $donnees): void
     {
         $this->base->set_charset('utf8mb4');

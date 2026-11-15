@@ -75,11 +75,57 @@ final class Geocodeur
             'user_agent' => $identifiant,
             'timeout' => self::DELAI,
             'header' => "Accept-Language: fr\r\n",
+            'ignore_errors' => true,
         ]]);
         $corps = @file_get_contents($adresse, false, $contexte);
         if ($corps === false) {
             throw new \RuntimeException('Le service de géocodage ne répond pas');
         }
+        $entetes = function_exists('http_get_last_response_headers') ? (http_get_last_response_headers() ?? []) : $http_response_header;
+        self::controler($entetes, time());
         return $corps;
+    }
+
+    /**
+     * @param list<string> $entetes en-têtes de la réponse, lignes d'état comprises (la dernière compte après une redirection)
+     * @param int|null $maintenant horodatage Unix servant à convertir un Retry-After donné en date
+     * @throws RefusDebit si le service demande de patienter
+     * @throws \RuntimeException pour toute autre réponse que 200
+     */
+    public static function controler(array $entetes, ?int $maintenant = null): void
+    {
+        $maintenant ??= time();
+        $statut = 0;
+        $attente = null;
+        foreach ($entetes as $ligne) {
+            if (preg_match('~\AHTTP/\S+\s+(\d{3})~', $ligne, $m) === 1) {
+                $statut = (int) $m[1];
+                $attente = null;
+            } elseif (preg_match('~\ARetry-After:\s*(.*?)\s*\z~i', $ligne, $m) === 1) {
+                $attente = self::attente($m[1], $maintenant);
+            }
+        }
+        if ($statut === 429 || $statut === 503) {
+            throw new RefusDebit('Le service de géocodage demande de patienter (HTTP ' . $statut . ').', $attente);
+        }
+        if ($statut !== 200) {
+            throw new \RuntimeException('Réponse inattendue du service de géocodage (HTTP ' . $statut . ').');
+        }
+    }
+
+    /** Retry-After : un nombre de secondes ou une date HTTP (RFC 9110, trois formats, toujours en UTC). */
+    private static function attente(string $valeur, int $maintenant): ?int
+    {
+        if (preg_match('~\A\d+\z~', $valeur) === 1) {
+            return (int) $valeur;
+        }
+        $valeur = (string) preg_replace('~\s+~', ' ', $valeur);
+        foreach (['!D, d M Y H:i:s \\G\\M\\T', '!l, d-M-y H:i:s \\G\\M\\T', '!D M j H:i:s Y'] as $format) {
+            $date = \DateTimeImmutable::createFromFormat($format, $valeur, new \DateTimeZone('UTC'));
+            if ($date !== false) {
+                return max(0, $date->getTimestamp() - $maintenant);
+            }
+        }
+        return null;
     }
 }
