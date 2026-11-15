@@ -2231,18 +2231,36 @@ function maj_stats($xtyp, $T0, $path, $mode, $com="", $dep="")
 
 //----------------------------------------------------------------------------
 
-function geocoder_commune($com,$dep)
-// Rend les coordonnées d'une commune (0 et 0 si introuvable), ou null si le service ne répond pas.
+function geoloc_stockage(): \ActaLibre\Geoloc\Stockage
 	{
-	static $geocodeur = null;
-	$geocodeur ??= new \ActaLibre\Carte\Geocodeur(
-		defined('GEOCODEUR_URL') ? GEOCODEUR_URL : \ActaLibre\Carte\Geocodeur::ADRESSE,
-		null,
-		\ActaLibre\Carte\Geocodeur::identifiant(ACTALIBRE_VERSION,adresse_publique())
-		);
+	return new \ActaLibre\Geoloc\Stockage(dirname(__DIR__).'/tmp/actalibre/geocodage');
+	}
+
+function geoloc_horloge(): \Closure
+	{
+	return static fn (): float => microtime(true);
+	}
+
+function geoloc_adresse(): string
+	{
+	return defined('GEOCODEUR_URL') ? (string)GEOCODEUR_URL : \ActaLibre\Carte\Geocodeur::ADRESSE;
+	}
+
+function geoloc_limite(): \ActaLibre\Geoloc\LimiteDebit
+	{
+	return new \ActaLibre\Geoloc\LimiteDebit(geoloc_stockage(), geoloc_horloge(), static function (float $secondes): void { usleep((int)ceil($secondes * 1000000)); });
+	}
+
+//------------------------------------------------------------------------------
+
+function geocoder_commune($com,$dep)
+// Test du service (paramètres, installation) : rend des coordonnées (0 et 0 si introuvable), ou null en cas de panne.
+// Il passe par la même limite de débit que les travaux de géolocalisation.
+	{
+	$geocodeur = new \ActaLibre\Carte\Geocodeur(geoloc_adresse(), null, \ActaLibre\Carte\Geocodeur::identifiant(ACTALIBRE_VERSION,adresse_publique()));
 	try
 		{
-		return $geocodeur->chercher($com.", ".$dep) ?? ['lon'=>0,'lat'=>0];
+		return geoloc_limite()->executer(static fn (): ?array => $geocodeur->chercher($com.", ".$dep)) ?? ['lon'=>0,'lat'=>0];
 		}
 	catch (\RuntimeException)
 		{
