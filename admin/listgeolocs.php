@@ -83,7 +83,7 @@ if ($xord =="C")
 	}
  elseif ($xord =="S")
 	{
-	$order = "find_in_set(STATUT,'N,M,A')";
+	$order = "find_in_set(STATUT,'N,I,M,A'), COMMUNE, DEPART";
 	$hgeoloc = '<b>Géolocalisation</b>';
 	}
  else
@@ -146,8 +146,7 @@ if ($xord =="C")
 			if (trim($lenom)=="") $lenom = '&lt;non précisé&gt;';
 			echo '<td><a href="'.$root.'/admin/gestgeoloc.php?id='.(int)$ligne['ID'].'">'.\ActaLibre\Securite\Filtre::stocke($lenom).'</a> </td>';
 			echo '<td>'.\ActaLibre\Securite\Filtre::stocke($ligne['DEPART']).' </td>';
-			$ast= ["M" => "Manuelle", "N" => "Non définie","A" => "Auto"];
-			echo '<td align="center">'.$ast[$ligne['STATUT']].'</td>';
+			echo '<td align="center">'.\ActaLibre\Geoloc\Statut::libelle((string)$ligne['STATUT']).'</td>';
 			echo '</tr>';
 			$i++;
 			}

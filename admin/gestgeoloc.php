@@ -183,10 +183,9 @@ if((int)$id<>0 and $missingargs)
 	echo '  <td><input type="text" name="lat" id="lat" size="10" value="'.\ActaLibre\Securite\Filtre::stocke($row['LAT']).'" />'."</td>\n";
 	echo " </tr>\n";
 
-	$ast= ["M" => "Manuelle", "N" => "Non définie","A" => "Automatique"];
 	echo " <tr>\n";
 	echo "  <td align='right'>Géolocalisation : </td>\n";
-	echo '  <td>'.($ast[$statut] ?? '')."</td>\n";
+	echo '  <td>'.\ActaLibre\Geoloc\Statut::libelle((string)$statut)."</td>\n";
 	echo " </tr>\n";
 
 	echo " <tr>\n";

@@ -382,7 +382,7 @@ final class SiteJetable
         }
     }
 
-    /** Des coordonnées déjà connues évitent tout géocodage vers Google quand les statistiques se calculent. */
+    /** Des coordonnées manuelles connues donnent une carte d'accueil déjà garnie. */
     private function enregistrerCoordonnees(string $donnees): void
     {
         $this->base->set_charset('utf8mb4');

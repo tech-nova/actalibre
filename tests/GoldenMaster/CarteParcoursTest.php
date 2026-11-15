@@ -22,6 +22,13 @@ final class CarteParcoursTest extends TestCase
         $this->site = SiteJetable::partage(['hote' => $hote, 'nom' => $nom, 'utilisateur' => $utilisateur, 'passe' => $passe]);
     }
 
+    protected function tearDown(): void
+    {
+        if (isset($this->site)) {
+            $this->site->reinitialiser();
+        }
+    }
+
     private function parametre(string $nom, string $valeur): void
     {
         $this->site->base->query("UPDATE gm_params SET valeur = '" . $this->site->base->real_escape_string($valeur) . "' WHERE param = '$nom'");
@@ -84,14 +91,37 @@ final class CarteParcoursTest extends TestCase
         self::assertSame('https://exemple.org/infos?a=1&b=2', $reglages['adresse']);
     }
 
-    public function testUnePanneDuGeocodageNEnregistreRien(): void
+    public function testLeRecalculNeCreePasDeFichePourUneCommuneSansActe(): void
     {
-        // Le site de test pointe vers une adresse locale fermée.
         $this->site->base->query("DELETE FROM gm_geoloc WHERE COMMUNE = 'FictifGeo'");
         $this->site->base->query("INSERT INTO gm_sums (COMMUNE, DEPART, TYPACT, LIBELLE, DEPOSANT) VALUES ('FictifGeo', 'XA', 'N', '', 19)");
         $page = $this->site->client('niveau9')->get('/admin/maj_sums.php', ['xtyp' => 'N', 'mode' => 'A', 'com' => 'FictifGeo [XA]', 'jeton' => Client::JETON]);
         self::assertSame(200, $page->statut);
+        self::assertStringNotContainsString('géocod', $page->corps);
         self::assertSame(0, $this->site->base->query("SELECT 1 FROM gm_geoloc WHERE COMMUNE = 'FictifGeo'")->num_rows);
+    }
+
+    public function testLeRecalculCreeLesLocalitesSansCoordonneesEtLeSignale(): void
+    {
+        $this->site->base->query('DELETE FROM gm_geoloc');
+        $page = $this->site->client('niveau9')->get('/admin/maj_sums.php', ['xtyp' => 'N', 'mode' => 'A', 'jeton' => Client::JETON]);
+
+        self::assertSame(200, $page->statut);
+        self::assertStringNotContainsString('Le service de géocodage ne répond pas', $page->corps);
+        self::assertStringContainsString('Mise à jour globale des statistiques', $page->corps);
+        $total = (int) $this->site->base->query('SELECT COUNT(*) FROM gm_geoloc')->fetch_row()[0];
+        self::assertGreaterThan(0, $total);
+        self::assertSame($total, (int) $this->site->base->query("SELECT COUNT(*) FROM gm_geoloc WHERE STATUT = 'N' AND LON = 0 AND LAT = 0")->fetch_row()[0]);
+        self::assertStringContainsString("n'ont pas de coordonnées géographiques", $page->corps);
+        self::assertStringContainsString('Géolocaliser les localités</a>', $page->corps);
+    }
+
+    public function testLeMessageNOffrePasLeLienSousLeNiveauNeuf(): void
+    {
+        $this->site->base->query('DELETE FROM gm_geoloc');
+        $page = $this->site->client('niveau6')->get('/admin/maj_sums.php', ['xtyp' => 'N', 'mode' => 'A', 'jeton' => Client::JETON]);
+        self::assertStringContainsString("n'ont pas de coordonnées géographiques", $page->corps);
+        self::assertStringNotContainsString('Géolocaliser les localités</a>', $page->corps);
     }
 
     public function testUneCommuneSansDepartementSAfficheSansCrochets(): void
@@ -122,17 +152,5 @@ final class CarteParcoursTest extends TestCase
     public function testLePiedDePageNommeActaLibre(): void
     {
         self::assertStringContainsString('>Actalibre</p>', $this->site->client('nouveau')->get('/index.php')->corps);
-    }
-
-    public function testUnePanneDuGeocodageNeSAfficheQuUneFois(): void
-    {
-        // Le site de test pointe vers une adresse locale fermée.
-        $this->site->base->query('DELETE FROM gm_geoloc');
-        $page = $this->site->client('niveau9')->get('/admin/maj_sums.php', ['xtyp' => 'N', 'mode' => 'A', 'jeton' => Client::JETON]);
-
-        self::assertSame(200, $page->statut);
-        self::assertSame(1, substr_count($page->corps, 'Le service de géocodage ne répond pas'));
-        self::assertStringContainsString('Mise à jour globale des statistiques', $page->corps);
-        self::assertSame(0, $this->site->base->query('SELECT 1 FROM gm_geoloc')->num_rows);
     }
 }
