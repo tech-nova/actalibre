@@ -15,7 +15,7 @@ abstract class BaseDiagnostic extends TestCase
         foreach (['logs','backups','archive'] as $d) { $this->poser('tmp_init/'.$d.'/.keep',''); }
         $fichiers = ['composer.json','inventaire-actalibre.json','_config_init/actes.css','tmp_init/.htaccess','tmp_init/logs/.keep','tmp_init/backups/.keep','tmp_init/archive/.keep'];
         $repertoires = ['_config_init','tmp_init','tmp_init/logs','tmp_init/backups','tmp_init/archive'];
-        file_put_contents($this->root.'/inventaire-actalibre.json', json_encode(['format'=>1,'version'=>'1.1.1','schema'=>'1.0.0','revision'=>str_repeat('a',40),'fichiers'=>$fichiers,'repertoires'=>$repertoires], JSON_THROW_ON_ERROR));
+        file_put_contents($this->root.'/inventaire-actalibre.json', json_encode(['format'=>1,'version'=>'1.1.2','schema'=>'1.0.0','revision'=>str_repeat('a',40),'fichiers'=>$fichiers,'repertoires'=>$repertoires], JSON_THROW_ON_ERROR));
     }
     protected function poser(string $p, string $texte): void
     {
