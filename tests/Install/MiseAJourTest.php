@@ -71,6 +71,29 @@ class MiseAJourTest extends BaseMiseAJour
         $this->base->query("UPDATE {$this->prefixe}_params SET valeur='0.9.0' WHERE param='ACTALIBRE_VERSION'");
         self::assertSame($complet,$this->empreinte(),'Le retrait de la seule différence autorisée restitue toute la base');
     }
+    public function testLeProduitSeulCompleteLesModelesCsv(): void
+    {
+        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','0.9.0');
+        mkdir($this->racine.'/admin/depot');file_put_contents($this->racine.'/admin/depot/N-NimegueV3.m_csv','personnel');
+        $this->marqueur('UPLOAD_DIR','depot');$this->identifier();
+        $r=$this->lancer('produit');
+        self::assertSame([],$r['avis']);
+        self::assertCount(8,glob($this->racine.'/admin/depot/*.m_csv'));
+        self::assertSame('personnel',file_get_contents($this->racine.'/admin/depot/N-NimegueV3.m_csv'));
+    }
+    public function testUnDepotInvalideNEmpechePasLaMiseAJourDuProduit(): void
+    {
+        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','0.9.0');
+        $this->marqueur('UPLOAD_DIR','../dehors');$this->identifier();
+        $r=$this->lancer('produit');
+        self::assertTrue($r['terminee']);self::assertCount(1,$r['avis']);
+        self::assertSame('1.1.2',$this->valeur('ACTALIBRE_VERSION'));
+    }
+    public function testLaMigrationFournitLesModelesCsv(): void
+    {
+        $this->terminer();
+        self::assertCount(8,glob($this->racine.'/admin/_upload/*.m_csv'));
+    }
     public function testUnNettoyageNeffacePasUneCibleChangee(): void
     {
         $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','1.1.2');

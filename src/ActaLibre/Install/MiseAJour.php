@@ -33,7 +33,7 @@ final class MiseAJour
             if ($action==='produit') {
                 $this->marquer($c,'ACTALIBRE_VERSION',$livraison->version);
                 $this->apresEffet?->__invoke('produit');
-                return $this->resultatFinal($c,[]);
+                return $this->resultatFinal($c,ModelesCsv::completerSite($this->racine,$c));
             }
             if ($action==='nettoyer') {
                 foreach ($e->restes as $nom) {
