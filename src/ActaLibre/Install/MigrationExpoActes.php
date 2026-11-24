@@ -143,6 +143,7 @@ final class MigrationExpoActes
             $bilan=Protections::actualiser($this->racine,$depot);
             if ($bilan['echecs']!==[]) $avis[]='Certaines protections de dossiers restent à vérifier.';
         } catch (\Throwable) { $avis[]='Modèles de protection indisponibles.'; }
+        $avis=array_merge($avis,ModelesCsv::completer($this->racine,$depot));
         if ($prive['erreurs']!==[]) $avis[]='Certains dossiers privés n’ont pas pu être préparés.';
         $archives=ArchivesHistoriques::deplacer($this->racine);
         foreach ($archives['archives'] as $p) $avis[]='Données historiques archivées : '.$p.'.';
