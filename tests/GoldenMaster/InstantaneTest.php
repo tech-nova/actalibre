@@ -59,7 +59,7 @@ final class InstantaneTest extends TestCase
         self::assertDirectoryDoesNotExist($site->racine . '/.superpowers', 'Les preuves privées restent hors du site servi');
         self::assertDirectoryDoesNotExist($site->racine . '/.phpstan.cache');
         self::assertDirectoryDoesNotExist($site->racine . '/graft');
-        self::assertSame(['1.0.0','1.0.0'], array_column($site->base->query("SELECT valeur FROM gm_params WHERE param IN ('ACTALIBRE_SCHEMA','ACTALIBRE_VERSION') ORDER BY param")->fetch_all(MYSQLI_ASSOC),'valeur'));
+        self::assertSame(['1.0.0','1.1.0'], array_column($site->base->query("SELECT valeur FROM gm_params WHERE param IN ('ACTALIBRE_SCHEMA','ACTALIBRE_VERSION') ORDER BY param")->fetch_all(MYSQLI_ASSOC),'valeur'));
         self::assertSame('0',$site->base->query("SELECT COUNT(*) FROM gm_params WHERE param='EA_VERSION'")->fetch_row()[0]);
         $rapport = file_get_contents($site->racine . '/tmp/actalibre/protection.json');
         $avant = self::empreinte($site);

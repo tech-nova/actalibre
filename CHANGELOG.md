@@ -1,8 +1,8 @@
 # Journal des modifications
 
-Toutes les modifications notables d'ActaLibre sont notées dans ce fichier.
+## [Non publié]
 
-## [1.1.0] - 2026-11-15
+## [1.1.0] - 2026-11-24
 
 ### Modifié
 
