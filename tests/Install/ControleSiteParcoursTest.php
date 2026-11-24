@@ -40,7 +40,7 @@ final class ControleSiteParcoursTest extends TestCase
         elseif ($etat==='sql') $this->site->base->query("ALTER TABLE {$p}_params CHANGE valeur autre TEXT NOT NULL");
         elseif ($etat==='livraison') file_put_contents($this->site->racine.'/composer.json','{');
         elseif ($etat==='futur') {
-            $this->site->base->query("INSERT INTO {$p}_params (param,valeur,aide) VALUES ('ACTALIBRE_VERSION','1.1.0',''),('ACTALIBRE_SCHEMA','1.0.0','')");
+            $this->site->base->query("INSERT INTO {$p}_params (param,valeur,aide) VALUES ('ACTALIBRE_VERSION','1.1.1',''),('ACTALIBRE_SCHEMA','1.0.0','')");
             $a=json_decode($json,true);$a['cible']=['produit'=>'1.1.0','schema'=>'1.1.0'];$json=json_encode($a);
         }
         if (in_array($etat,['migration','futur'],true)) {
@@ -71,9 +71,9 @@ final class ControleSiteParcoursTest extends TestCase
     public function testUneNouvelleRequeteRelitLaLivraisonEtLesMarqueurs(): void
     {
         $this->source();$p=$this->site->prefixe;
-        $this->site->base->query("INSERT INTO {$p}_params (param,valeur,aide) VALUES ('ACTALIBRE_VERSION','1.1.0',''),('ACTALIBRE_SCHEMA','1.0.0','')");
+        $this->site->base->query("INSERT INTO {$p}_params (param,valeur,aide) VALUES ('ACTALIBRE_VERSION','1.1.1',''),('ACTALIBRE_SCHEMA','1.0.0','')");
         file_put_contents($this->site->racine.'/tools/PreProcess.inc.php','<?php echo json_encode([ACTALIBRE_VERSION,ACTALIBRE_SCHEMA,defined("EA_VERSION"),defined("EA_VERSION_PRG")]);exit;');
-        $c=$this->site->client();self::assertSame(['1.1.0','1.0.0',false,false],json_decode($c->get('/index.php')->corps,true));
+        $c=$this->site->client();self::assertSame(['1.1.1','1.0.0',false,false],json_decode($c->get('/index.php')->corps,true));
         $this->site->base->query("UPDATE {$p}_params SET valeur='1.1.0' WHERE param='ACTALIBRE_SCHEMA'");
         self::assertSame(503,$c->get('/index.php')->statut);
         $this->site->base->query("UPDATE {$p}_params SET valeur='1.0.0' WHERE param='ACTALIBRE_SCHEMA'");
@@ -83,7 +83,7 @@ final class ControleSiteParcoursTest extends TestCase
     public function testUnResteTermineAutoriseLeSiteSansLeNettoyer(): void
     {
         $this->source();$p=$this->site->prefixe;
-        $this->site->base->query("INSERT INTO {$p}_params (param,valeur,aide) VALUES ('ACTALIBRE_VERSION','1.1.0',''),('ACTALIBRE_SCHEMA','1.0.0',''),('ACTALIBRE_INSTALLATION','debut','')");
+        $this->site->base->query("INSERT INTO {$p}_params (param,valeur,aide) VALUES ('ACTALIBRE_VERSION','1.1.1',''),('ACTALIBRE_SCHEMA','1.0.0',''),('ACTALIBRE_INSTALLATION','debut','')");
         file_put_contents($this->site->racine.'/tools/PreProcess.inc.php','<?php echo "site ouvert";exit;');$avant=$this->empreinte();
         self::assertSame('site ouvert',$this->site->client()->get('/index.php')->corps);self::assertSame($avant,$this->empreinte());
     }

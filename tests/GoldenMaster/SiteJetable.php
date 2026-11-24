@@ -408,7 +408,7 @@ final class SiteJetable
     {
         $this->base->set_charset('utf8mb4');
         self::exiger($this->valeur("SELECT valeur FROM gm_params WHERE param = 'ACTALIBRE_SCHEMA'") === '1.0.0', 'Marqueur neuf absent');
-        self::exiger($this->valeur("SELECT valeur FROM gm_params WHERE param = 'ACTALIBRE_VERSION'") === '1.1.0', 'Marqueur neuf absent');
+        self::exiger($this->valeur("SELECT valeur FROM gm_params WHERE param = 'ACTALIBRE_VERSION'") === '1.1.1', 'Marqueur neuf absent');
         self::exiger($this->valeur("SELECT COUNT(*) FROM gm_params WHERE param IN ('ACTALIBRE_INSTALLATION','ACTALIBRE_MIGRATION','EA_VERSION')") === '0', 'Marqueur temporaire ou historique inattendu');
         $q = $this->base->prepare("UPDATE gm_user3 SET nom='FICTIF', prenom='Installation' WHERE login=?");
         $q->execute([self::COMPTE_INSTALLATION['login']]);

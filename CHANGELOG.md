@@ -2,6 +2,8 @@
 
 ## [Non publié]
 
+## [1.1.1] - 2026-11-24
+
 ### Corrigé
 
 - `update.php` : après un refus de création d’administrateur, le formulaire reste ouvert, affiche l’erreur et conserve la saisie, sauf les mots de passe.
