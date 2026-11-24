@@ -10,7 +10,7 @@ Les tests qui utilisent MySQL lisent les variables `GM_DB_HOST`, `GM_DB_USER`, `
 
     vendor/bin/phpunit --testsuite ActaLibre        # tests unitaires et parcours
     vendor/bin/phpunit --testsuite golden-master    # non-régression des pages
-    vendor/bin/phpunit --testsuite distribution     # archive testée sous Apache (module PHP 8.3)
+    vendor/bin/phpunit --testsuite distribution     # archive testée sous Apache (module PHP 8.4)
     composer analyse                                # PHPStan
 
 Le Golden Master compare chaque page à une référence enregistrée. Une différence est un échec : ne jamais régénérer les références (`GM_MAJ=1`) sans avoir examiné et justifié chaque changement.

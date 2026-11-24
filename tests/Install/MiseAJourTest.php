@@ -16,7 +16,7 @@ class MiseAJourTest extends BaseMiseAJour
         self::assertSame('1',$this->valeur('EA_MAINTENANCE'),'Le choix de maintenance de l’administrateur est conservé');
         self::assertSame($acte,$this->base->query("SELECT * FROM {$this->prefixe}_nai3")->fetch_all());
         self::assertSame(' 3.2.4 ',$this->valeur('EA_VERSION'));self::assertNull($this->valeur('ACTALIBRE_MIGRATION'));
-        self::assertSame('1.0.0',$this->valeur('ACTALIBRE_SCHEMA'));self::assertSame('1.0.0',$this->valeur('ACTALIBRE_VERSION'));
+        self::assertSame('1.0.0',$this->valeur('ACTALIBRE_SCHEMA'));self::assertSame('1.1.0',$this->valeur('ACTALIBRE_VERSION'));
         self::assertSame($configuration,file_get_contents($this->racine.'/_config/connect.inc.php'));
         $hash=$this->comptes->query("SELECT hashpass FROM {$this->prefixeComptes}_user3 WHERE ID=1")->fetch_row()[0];
         self::assertTrue(MotDePasse::verifier(SourceExpoActes::MOT_DE_PASSE,$hash));
@@ -66,14 +66,14 @@ class MiseAJourTest extends BaseMiseAJour
         $avant=$this->base->query("SELECT * FROM {$this->prefixe}_params ORDER BY param")->fetch_all(MYSQLI_ASSOC);$comptes=$this->instantaneComptes();$complet=$this->empreinte();
         $this->lancer('produit');
         $apres=$this->base->query("SELECT * FROM {$this->prefixe}_params ORDER BY param")->fetch_all(MYSQLI_ASSOC);
-        foreach ($avant as &$p) if ($p['param']==='ACTALIBRE_VERSION') $p['valeur']='1.0.0';unset($p);
+        foreach ($avant as &$p) if ($p['param']==='ACTALIBRE_VERSION') $p['valeur']='1.1.0';unset($p);
         self::assertSame($avant,$apres);self::assertSame($comptes,$this->instantaneComptes());self::assertNull($this->valeur('ACTALIBRE_MIGRATION'));
         $this->base->query("UPDATE {$this->prefixe}_params SET valeur='0.9.0' WHERE param='ACTALIBRE_VERSION'");
         self::assertSame($complet,$this->empreinte(),'Le retrait de la seule différence autorisée restitue toute la base');
     }
     public function testUnNettoyageNeffacePasUneCibleChangee(): void
     {
-        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','1.0.0');
+        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','1.1.0');
         $a=Avancement::commencer($this->etat()->site->livraison);$this->marqueur('ACTALIBRE_MIGRATION',$a->encoder());$this->identifier();
         $this->marqueur('ACTALIBRE_MIGRATION',$a->suivant('verification',null)->encoder());$avant=$this->empreinte();
         try { $this->lancer('nettoyer');self::fail('Reste changé effacé'); }
@@ -129,8 +129,26 @@ class MiseAJourTest extends BaseMiseAJour
             catch (\RuntimeException $e) { self::assertSame(\RuntimeException::class,$e::class);self::assertStringContainsString('migration en cours',$e->getMessage()); }
             self::assertSame($avant,$this->empreinte());
         } finally { proc_terminate($processus);proc_close($processus); }
+        $this->attendreVerrousLibres();
         self::assertSame('capacite:mar3',Avancement::decoder($this->valeur('ACTALIBRE_MIGRATION'))->etape);
         $this->terminer();self::assertTrue($this->etat()->accessible);
+    }
+    /** MySQL ne rend les verrous d'un processus tué qu'après avoir constaté la fin de ses connexions. */
+    private function attendreVerrousLibres(): void
+    {
+        $limite=microtime(true)+10;
+        foreach (array_filter([$this->c->configuration->actes,$this->c->configuration->comptes]) as $a) {
+            $lien=$a->ouvrir();
+            try {
+                while (true) {
+                    try { Verrou::prendre($lien,$a->base,$a->prefixe,'migration')->liberer();break; }
+                    catch (\RuntimeException $e) {
+                        if ($e->getMessage()!=='migration en cours' || microtime(true)>=$limite) throw $e;
+                        usleep(20000);
+                    }
+                }
+            } finally { $lien->close(); }
+        }
     }
     public function testUneRetrogradationInterditLeLotSuivant(): void
     {
