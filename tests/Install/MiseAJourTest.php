@@ -129,8 +129,26 @@ class MiseAJourTest extends BaseMiseAJour
             catch (\RuntimeException $e) { self::assertSame(\RuntimeException::class,$e::class);self::assertStringContainsString('migration en cours',$e->getMessage()); }
             self::assertSame($avant,$this->empreinte());
         } finally { proc_terminate($processus);proc_close($processus); }
+        $this->attendreVerrousLibres();
         self::assertSame('capacite:mar3',Avancement::decoder($this->valeur('ACTALIBRE_MIGRATION'))->etape);
         $this->terminer();self::assertTrue($this->etat()->accessible);
+    }
+    /** MySQL ne rend les verrous d'un processus tué qu'après avoir constaté la fin de ses connexions. */
+    private function attendreVerrousLibres(): void
+    {
+        $limite=microtime(true)+10;
+        foreach (array_filter([$this->c->configuration->actes,$this->c->configuration->comptes]) as $a) {
+            $lien=$a->ouvrir();
+            try {
+                while (true) {
+                    try { Verrou::prendre($lien,$a->base,$a->prefixe,'migration')->liberer();break; }
+                    catch (\RuntimeException $e) {
+                        if ($e->getMessage()!=='migration en cours' || microtime(true)>=$limite) throw $e;
+                        usleep(20000);
+                    }
+                }
+            } finally { $lien->close(); }
+        }
     }
     public function testUneRetrogradationInterditLeLotSuivant(): void
     {
