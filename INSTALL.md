@@ -20,7 +20,15 @@ Si l’écran 1 désigne une base existante (ExpoActes 3.2.4 ou ActaLibre), `ins
 ## Migration depuis ExpoActes 3.2.4 uniquement
 
 1. Mettre l’ancien site en maintenance et sauvegarder **toutes** ses bases, notamment la table des comptes si elle est distincte. Une sauvegarde des seuls actes ne suffit pas. Garder également une copie complète des fichiers, hors du dossier publié.
-2. Transférer l’archive ActaLibre entière par-dessus le site, fichiers cachés compris. Activer PHP ≥ 8.3 à ce moment : l’ancien code peut ne pas fonctionner avec cette version.
+2. Transférer l’archive ActaLibre entière, fichiers cachés compris, **dans un répertoire vide** : un transfert par-dessus l’ancien site ne supprime rien et laisse en place d’anciens scripts PHP, qui restent appelables. Activer PHP ≥ 8.3 à ce moment : l’ancien code peut ne pas fonctionner avec cette version.
+
+   Recopier ensuite de l’ancien site, aux mêmes emplacements, seulement ce qui a été personnalisé ou ajouté :
+
+   - `_config/` : `actes.css`, `actes_print.css`, `bandeau.htm`, `commentaire.htm`, `acces.htm`. Relire les `.htm` : PHP les inclut, et exécuterait le code qu’ils contiendraient ;
+   - `admin/_upload/*.m_csv` (ou le dépôt défini par `UPLOAD_DIR`) : les modèles de chargement ;
+   - les photos et images ajoutées.
+
+   Ne pas recopier les `.htaccess`, ni les CSV de `admin/_upload/`. Ouvrir `install.php` et saisir la connexion à la base existante (ainsi que celle des comptes si elle est distincte) : le fichier de connexion et les fichiers absents sont créés, sans remplacer ceux qui viennent d’être recopiés, puis la page renvoie vers `update.php`.
 3. Ouvrir `update.php`, vérifier l’adresse canonique puis s’authentifier avec un compte de niveau 9. Si ces identifiants sont perdus, la rubrique « Identifiants perdus : créer un nouvel administrateur » crée un compte de niveau 9 après dépôt par FTP, dans `_config/`, d’un fichier vide portant le nom affiché ; la migration démarre aussitôt avec ce compte. Les pages ordinaires restent en maintenance jusqu’à la fin de la migration. `install/update.php` redirige vers la nouvelle adresse sans rejouer le POST.
 4. Laisser les formulaires de continuation se soumettre automatiquement. Sans JavaScript, cliquer sur « Continuer ». Après une interruption ou une session expirée, rouvrir `update.php` et se reconnecter : l’avancement est repris. Les utilisateurs gardent leur mot de passe, converti au nouveau format.
 5. Vérifier le bilan, le contrôle des protections et la liste des fichiers non reconnus, puis retirer ceux qui sont inutiles par FTP. Sortir de la maintenance d’exploitation si elle était activée dans les paramètres.
@@ -31,7 +39,7 @@ Pour restaurer une ancienne sauvegarde d’actes `.bea` après migration, recopi
 
 Sur de grosses tables MyISAM, un `ALTER TABLE` peut dépasser le délai PHP ou Apache. La reprise ne supprime pas cette limite : faire augmenter les délais de l’hébergement si la même étape échoue à chaque essai. Pour revenir en arrière, restaurer les fichiers **et toutes les bases** sauvegardées, ainsi que l’ancienne version de PHP si nécessaire ; les empreintes converties ne sont plus lisibles par ExpoActes.
 
-Depuis ActaLibre, sauvegarder également les fichiers et bases, transférer le nouveau code puis ouvrir `update.php`. À schéma identique, seul le produit est mis à jour après authentification. Aucune migration vers un autre schéma ActaLibre n’est livrée en 1.0.
+Depuis ActaLibre, sauvegarder également les fichiers et bases, transférer le nouveau code par-dessus le site puis ouvrir `update.php`. L’archive ne contient ni `_config/` ni `admin/_upload/` : les personnalisations et les modèles de chargement ne sont pas écrasés. Ne pas personnaliser `_config_init/`, remplacé à chaque version. Vérifier ensuite la liste des fichiers non reconnus. À schéma identique, seul le produit est mis à jour après authentification. Aucune migration vers un autre schéma ActaLibre n’est livrée en 1.0.
 
 ## Stockage et protections
 
