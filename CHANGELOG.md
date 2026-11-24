@@ -2,6 +2,11 @@
 
 ## [Non publié]
 
+### Corrigé
+
+- `update.php` : après un refus de création d’administrateur, le formulaire reste ouvert, affiche l’erreur et conserve la saisie, sauf les mots de passe.
+- `update.php` : si la migration échoue juste après la création du compte, la page indique que le compte existe et invite à se reconnecter avec lui.
+
 ## [1.1.0] - 2026-11-24
 
 ### Modifié

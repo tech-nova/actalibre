@@ -13,7 +13,7 @@ final class PageMiseAJour
     {
         header('Content-Type: text/html; charset=UTF-8');
         header('Cache-Control: no-store');header('Referrer-Policy: no-referrer');
-        $c=null;$etat=null;$jeton='';$message='';$suite=false;$avis=[];$administrateur=false;$origine='';$diagnostic='';$preuve='';
+        $c=null;$etat=null;$jeton='';$message='';$suite=false;$avis=[];$administrateur=false;$origine='';$diagnostic='';$preuve='';$saisie=null;$cree='';
         try {
             $livraison=Livraison::lire($racine.'/composer.json');Installateur::prerequis($livraison);
             $methode=$_SERVER['REQUEST_METHOD']??'GET';
@@ -47,7 +47,10 @@ final class PageMiseAJour
                 $action=self::lirePost('action');$perimetre=$configuration->perimetre();
                 // L'adresse est validée avant tout effet : un compte créé ne doit pas dépendre d'un refus ultérieur.
                 $soumise=self::lirePost('url_site');
-                $origine=ControleProtection::origine($soumise!=='' ? $soumise : $origine);
+                if ($soumise!=='') $origine=$soumise;
+                // Saisie reprise si la création est refusée ; jamais les mots de passe.
+                if ($action==='creer') $saisie=['login'=>self::lirePost('login'),'courriel'=>self::lirePost('courriel')];
+                $origine=ControleProtection::origine($origine);
                 if (in_array($action,['demarrer','produit','nettoyer'],true)) {
                     $a=$configuration->comptes??$configuration->actes;
                     // La décision lue en base, jamais l'action du POST, choisit le limiteur.
@@ -62,7 +65,8 @@ final class PageMiseAJour
                     if ($motDePasse!==self::lirePost('confirmation')) throw new \RuntimeException('Les mots de passe doivent être identiques.');
                     $a=$configuration->comptes??$configuration->actes;
                     Administrateur::ajouter($c->comptes,$a->prefixe,$login,self::lirePost('courriel'),$motDePasse);
-                    PreuveFtp::consommer($racine,$_SESSION);
+                    $cree=$login;$saisie=null;
+                    PreuveFtp::consommer($racine,$_SESSION);$preuve='';
                     $autorisation=SessionMiseAJour::authentifier($c->comptes,$a->prefixe,$login,$motDePasse,$perimetre);
                     SessionMiseAJour::lierProcedure($etat);
                     $action='demarrer';
@@ -85,7 +89,9 @@ final class PageMiseAJour
         } finally {
             SessionMiseAJour::fermer();$c?->fermer();
         }
-        self::vue($message,$etat,$jeton,$suite,$avis,$administrateur,$origine,$diagnostic,$preuve);
+        // Compte créé mais migration interrompue : l'identifiant est pris, il faut s'en servir.
+        if ($cree!=='' && !$administrateur) $message.=' Le compte administrateur « '.$cree.' » a été créé : reconnectez-vous avec ce compte ci-dessous pour reprendre la mise à jour.';
+        self::vue($message,$etat,$jeton,$suite,$avis,$administrateur,$origine,$diagnostic,$preuve,$saisie,$cree);
     }
     private static function lirePost(string $nom): string
     {
@@ -93,11 +99,14 @@ final class PageMiseAJour
         if (!is_string($valeur) || str_contains($valeur,"\x00")) throw new \RuntimeException('Champ de formulaire invalide.');
         return $valeur;
     }
-    /** @param list<string> $avis */
-    private static function vue(string $message,?EtatExploitation $etat,string $jeton,bool $suite,array $avis,bool $administrateur=false,string $origine='',string $diagnostic='',string $preuve=''): void
+    /**
+     * @param list<string> $avis
+     * @param array{login:string,courriel:string}|null $saisie création d'administrateur refusée
+     */
+    private static function vue(string $message,?EtatExploitation $etat,string $jeton,bool $suite,array $avis,bool $administrateur=false,string $origine='',string $diagnostic='',string $preuve='',?array $saisie=null,string $cree=''): void
     {
         echo '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mettre à jour ActaLibre</title>';
-        echo '<style>body{font:1rem/1.5 system-ui,sans-serif;background:#f4f5f7;color:#172433;margin:0;padding:2rem}main{max-width:46rem;margin:auto;background:white;padding:2rem;border-radius:.6rem}label{display:block;margin-top:1rem}input{display:block;max-width:100%;font:inherit;padding:.4rem}code{overflow-wrap:anywhere;background:#eef1f5;padding:0 .2rem}details{margin-top:1.5rem}button{font:inherit;margin-top:1rem;padding:.6rem 1rem}a{color:#145a8d}.attente{display:none;align-items:center;gap:.8rem;margin-top:1rem}.attente.active{display:flex}.attente span{flex:none;width:1.6rem;height:1.6rem;border:.25rem solid #d5dbe3;border-top-color:#145a8d;border-radius:50%;animation:tourne .9s linear infinite}@keyframes tourne{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.attente span{animation-duration:3s}}</style><main><h1>Mettre à jour ActaLibre</h1>';
+        echo '<style>body{font:1rem/1.5 system-ui,sans-serif;background:#f4f5f7;color:#172433;margin:0;padding:2rem}main{max-width:46rem;margin:auto;background:white;padding:2rem;border-radius:.6rem}label{display:block;margin-top:1rem}input{display:block;max-width:100%;font:inherit;padding:.4rem}code{overflow-wrap:anywhere;background:#eef1f5;padding:0 .2rem}details{margin-top:1.5rem}.erreur{color:#a11a1a;font-weight:600}button{font:inherit;margin-top:1rem;padding:.6rem 1rem}a{color:#145a8d}.attente{display:none;align-items:center;gap:.8rem;margin-top:1rem}.attente.active{display:flex}.attente span{flex:none;width:1.6rem;height:1.6rem;border:.25rem solid #d5dbe3;border-top-color:#145a8d;border-radius:50%;animation:tourne .9s linear infinite}@keyframes tourne{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.attente span{animation-duration:3s}}</style><main><h1>Mettre à jour ActaLibre</h1>';
         echo '<p role="status">'.Filtre::html($message).'</p>';
         if ($administrateur && $etat!==null && $etat->site->livraison!==null) {
             echo '<p>Livraison : '.Filtre::html($etat->site->livraison->version).' ; schéma '.Filtre::html($etat->site->livraison->schema).'.</p>';
@@ -110,15 +119,17 @@ final class PageMiseAJour
             if ($origine==='') $origine=(Cookie::enHttps()?'https://':'http://').(string)($_SERVER['HTTP_HOST']??'localhost').rtrim(str_replace('\\','/',dirname((string)($_SERVER['SCRIPT_NAME']??'/update.php'))),'/').'/';
             // Pendant la poursuite automatique, l'adresse reste transmise sans libellé visible.
             echo $suite ? '<input name="url_site" type="hidden" value="'.Filtre::html($origine).'">' : '<label>Adresse complète du site <input name="url_site" type="url" value="'.Filtre::html($origine).'" required></label>';
-            if (!$suite) echo '<p>Identifiez-vous avec un compte administrateur pour confirmer cette action.</p><label for="login">Identifiant</label><input id="login" name="login" autocomplete="username" required><label for="mot_de_passe">Mot de passe</label><input id="mot_de_passe" name="mot_de_passe" type="password" autocomplete="current-password" required>';
+            if (!$suite) echo '<p>Identifiez-vous avec un compte administrateur pour confirmer cette action.</p><label for="login">Identifiant</label><input id="login" name="login" autocomplete="username" value="'.Filtre::html($cree).'" required><label for="mot_de_passe">Mot de passe</label><input id="mot_de_passe" name="mot_de_passe" type="password" autocomplete="current-password" required>';
             // Sans JavaScript, la poursuite reste possible par le bouton.
             echo $suite ? '<noscript><button type="submit">Continuer</button></noscript></form>' : '<button type="submit">'.($action==='nettoyer'?'Nettoyer les restes terminés':'Mettre à jour ActaLibre').'</button></form>';
             if (!$suite && $preuve!=='') {
-                echo '<details><summary>Identifiants perdus : créer un nouvel administrateur</summary><form class="poursuite" method="post" action=""><input type="hidden" name="action" value="creer"><input type="hidden" name="jeton" value="'.Filtre::html($jeton).'">';
+                echo '<details'.($saisie!==null?' open':'').'><summary>Identifiants perdus : créer un nouvel administrateur</summary>';
+                if ($saisie!==null) echo '<p class="erreur" role="alert">'.Filtre::html($message).'</p>';
+                echo '<form class="poursuite" method="post" action=""><input type="hidden" name="action" value="creer"><input type="hidden" name="jeton" value="'.Filtre::html($jeton).'">';
                 echo '<p>Pour prouver que vous contrôlez ce serveur, déposez par FTP un fichier vide nommé <code>'.Filtre::html($preuve).'</code> dans le dossier <code>_config/</code>, puis validez ce formulaire. Ce nom est valable une heure, dans ce navigateur ; le fichier est supprimé après la création du compte, et la migration démarre aussitôt.</p>';
                 echo '<label>Adresse complète du site <input name="url_site" type="url" value="'.Filtre::html($origine).'" required></label>';
                 foreach (['login'=>['Identifiant','text','username'],'courriel'=>['Courriel','email','email'],'mot_de_passe'=>['Mot de passe','password','new-password'],'confirmation'=>['Confirmation du mot de passe','password','new-password']] as $nom=>[$libelle,$type,$auto]) {
-                    echo '<label for="creer_'.$nom.'">'.$libelle.'</label><input id="creer_'.$nom.'" name="'.$nom.'" type="'.$type.'" autocomplete="'.$auto.'" required>';
+                    echo '<label for="creer_'.$nom.'">'.$libelle.'</label><input id="creer_'.$nom.'" name="'.$nom.'" type="'.$type.'" value="'.Filtre::html($saisie[$nom]??'').'" autocomplete="'.$auto.'" required>';
                 }
                 echo '<button type="submit">Créer l’administrateur et mettre à jour</button></form></details>';
             }
