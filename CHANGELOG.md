@@ -2,6 +2,11 @@
 
 ## [Non publié]
 
+### Corrigé
+
+- Paramétrage : les réglages du groupe « Géoloc » (contenu de la page d’accueil, carte) s’enregistrent de nouveau.
+- Chargement CSV : renvoyer un fichier déjà chargé (retour arrière du navigateur) invite à le déposer à nouveau et n’inscrit plus « SECU : fichier refusé » au journal.
+
 ## [1.1.1] - 2026-11-24
 
 ### Corrigé

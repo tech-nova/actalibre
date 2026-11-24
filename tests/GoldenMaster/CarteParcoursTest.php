@@ -52,6 +52,17 @@ final class CarteParcoursTest extends TestCase
         self::assertNotSame([], json_decode($bloc[1], true)['marqueurs'], 'Les communes géolocalisées sont sur la carte');
     }
 
+    public function testLeContenuDeLaPageDAccueilSEnregistre(): void
+    {
+        $this->parametre('GEO_MODE_PUBLIC', '2');
+        $page = $this->site->client('niveau9')->post('/admin/gest_params.php', [
+            'parname1' => 'GEO_MODE_PUBLIC', 'parvalue1' => '1', 'parnbr' => '6', 'grp' => 'Géoloc', 'xconfirm' => 'confirmed',
+        ]);
+        self::assertStringContainsString('Sauvegarde : 1 paramètre(s) modifié(s).', $page->corps);
+        self::assertSame('1', $this->site->base->query("SELECT valeur FROM gm_params WHERE param = 'GEO_MODE_PUBLIC'")->fetch_row()[0]);
+        self::assertStringContainsString('id="carte-donnees"', $this->site->client('nouveau')->get('/index.php')->corps);
+    }
+
     public function testLaFicheDUneLocaliteAfficheSaCarte(): void
     {
         $corps = $this->site->client('nouveau')->get('/localite.php', ['id' => 3])->corps;
