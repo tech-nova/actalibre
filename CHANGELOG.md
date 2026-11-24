@@ -2,6 +2,8 @@
 
 ## [Non publié]
 
+## [1.1.2] - 2026-11-24
+
 ### Corrigé
 
 - Paramétrage : les réglages du groupe « Géoloc » (contenu de la page d’accueil, carte) s’enregistrent de nouveau.

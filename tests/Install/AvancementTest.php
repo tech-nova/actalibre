@@ -9,13 +9,13 @@ final class AvancementTest extends TestCase
 {
     public function testLeFormatEstStableEtCompareLesDeuxCibles(): void
     {
-        $json='{"format":1,"nature":"expoactes","source":"3.2.4","cible":{"produit":"1.1.1","schema":"1.0.0"},"etape":"preparation","position":null}';
+        $json='{"format":1,"nature":"expoactes","source":"3.2.4","cible":{"produit":"1.1.2","schema":"1.0.0"},"etape":"preparation","position":null}';
         $a=Avancement::commencer(Livraison::lire(dirname(__DIR__,2).'/composer.json'));
         self::assertSame($json,$a->encoder());
         self::assertSame($json,Avancement::decoder($json)->encoder());
-        self::assertTrue($a->terminePour('1.1.1','1.0.0'));
-        self::assertFalse($a->terminePour('1.1.2','1.0.0'));
-        self::assertFalse($a->terminePour('1.1.1','1.0.1'));
+        self::assertTrue($a->terminePour('1.1.2','1.0.0'));
+        self::assertFalse($a->terminePour('9.9.9','1.0.0'));
+        self::assertFalse($a->terminePour('1.1.2','1.0.1'));
     }
     public static function invalides(): iterable
     {
