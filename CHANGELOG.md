@@ -2,9 +2,15 @@
 
 ## [Non publié]
 
+## [1.1.3] - 2026-11-24
+
 ### Corrigé
 
 - Chargement CSV : les modèles NimegueV3 d’ExpoActes 3.2.4 (avec et sans photos, pour chaque type d’acte) sont de nouveau livrés. `update.php` copie les modèles absents dans le dossier de dépôt, sans remplacer ceux du site.
+
+### Modifié
+
+- `INSTALL.md` : la migration depuis ExpoActes se fait dans un répertoire vide, avec la liste des fichiers à recopier de l’ancien site.
 
 ## [1.1.2] - 2026-11-24
 
