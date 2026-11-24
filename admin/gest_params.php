@@ -108,8 +108,8 @@ if (!$missingargs)
 
 	if ($xconfirm == 'confirmed')
 		{
-        // Le nombre de champs vient du groupe en base, jamais de parnbr reçu.
-        $compte = \ActaLibre\Db\Requete::executer(EA_sql_which_link(), "SELECT COUNT(*) FROM ".EA_DB."_params WHERE BINARY groupe = BINARY ?", [$xgroupe]);
+        // Le nombre de champs vient du groupe en base, jamais de parnbr reçu. Conversion nécessaire : la table est en latin1, la connexion en UTF-8.
+        $compte = \ActaLibre\Db\Requete::executer(EA_sql_which_link(), "SELECT COUNT(*) FROM ".EA_DB."_params WHERE BINARY CONVERT(groupe USING utf8mb4) = BINARY CONVERT(? USING utf8mb4)", [$xgroupe]);
         $limite = $compte instanceof mysqli_result ? (int)$compte->fetch_row()[0] : 0;
         $propositions = [];
         for ($i = 1; $i <= $limite; $i++) {

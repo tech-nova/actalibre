@@ -241,4 +241,60 @@ final class CorrectionsParcoursTest extends TestCase
         $this->assertPageSansErreur($page);
         self::assertSame('0', $this->valeur("SELECT COUNT(*) FROM gm_mgrplg WHERE sigle = 'FX'"));
     }
+
+    /** @return array<string,string> */
+    private function parametresCsv(Client $client): array
+    {
+        $source = sys_get_temp_dir() . '/gm-csv-' . getmypid() . '.csv';
+        file_put_contents($source, "FICTIFRETOUR;Jean;01/02/1790\n");
+        $commun = ['TypeActes' => 'N', 'Commune' => 'FictifRetour', 'Depart' => 'XA'];
+        try {
+            $page = $client->post('/admin/chargecsv.php', $commun + ['action' => 'phase_1', 'submitD' => '1'], ['Actes' => $source]);
+        } finally {
+            unlink($source);
+        }
+        self::assertSame(1, preg_match('/name="fileuploaded" value="([^"]+)"/', $page->corps, $fichier));
+        preg_match_all('/name="ZID(\d+)" value="(\d+)"/', $page->corps, $zones, PREG_SET_ORDER);
+        self::assertNotEmpty($zones);
+        $colonnes = [];
+        foreach (['NOM' => '1', 'PRE' => '2', 'DATETXT' => '3'] as $zone => $colonne) {
+            $colonnes[$this->valeur("SELECT ZID FROM gm_metadb WHERE ZONE = '$zone' AND dtable = 'N'")] = $colonne;
+        }
+        $parametres = $commun + ['action' => 'phase_2', 'fileuploaded' => html_entity_decode($fichier[1])];
+        foreach ($zones as [, $rang, $zid]) {
+            $parametres += ['ZID' . $rang => $zid, 'Zone' . $rang => $colonnes[$zid] ?? '0', 'Trait' . $rang => '0'];
+        }
+        return $parametres;
+    }
+
+    public function testRenvoyerUnCsvDejaChargeInviteALeDeposerDeNouveau(): void
+    {
+        $client = $this->site->client('niveau9');
+        $parametres = $this->parametresCsv($client);
+        $this->assertPageSansErreur($client->post('/admin/chargecsv.php', $parametres + ['submitC' => '1']));
+        $compte = "SELECT COUNT(*) FROM gm_nai3 WHERE NOM = 'FICTIFRETOUR'";
+        self::assertSame('1', $this->valeur($compte));
+
+        foreach (['submitC', 'submitV', 'submitR', 'submitS', 'submitL'] as $bouton) {
+            $page = $client->post('/admin/chargecsv.php', $parametres + [$bouton => '1']);
+            $this->assertPageSansErreur($page);
+            self::assertStringContainsString('déposez-le à nouveau', $page->corps, $bouton);
+            self::assertStringContainsString('name="submitD"', $page->corps, $bouton);
+            self::assertStringContainsString('</html>', $page->corps, $bouton);
+        }
+        self::assertSame('1', $this->valeur($compte));
+        self::assertSame('0', $this->valeur("SELECT COUNT(*) FROM gm_log WHERE ACTION LIKE 'SECU%'"));
+
+        $this->assertPageSansErreur($client->post('/admin/chargecsv.php', $this->parametresCsv($client) + ['submitC' => '1', 'SuprRedon' => '0']));
+        self::assertSame('2', $this->valeur($compte));
+        $this->assertJournalSansErreur();
+    }
+
+    public function testUnNomDeFichierInterditResteSignale(): void
+    {
+        $client = $this->site->client('niveau9');
+        $page = $client->post('/admin/chargecsv.php', ['fileuploaded' => '../../_config/connect.inc.php', 'submitC' => '1'] + $this->parametresCsv($client));
+        self::assertStringContainsString('nom de fichier non autorisé', $page->corps);
+        self::assertSame('1', $this->valeur("SELECT COUNT(*) FROM gm_log WHERE ACTION LIKE 'SECU : fichier refus%'"));
+    }
 }

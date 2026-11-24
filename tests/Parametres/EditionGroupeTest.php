@@ -44,4 +44,22 @@ final class EditionGroupeTest extends TestCase
         self::assertSame('0', $this->valeur('AUTRE'));
         self::assertSame('&lt;b&gt; &amp;', $this->valeur('SITENAME'));
     }
+    /** Les tables livrées sont en latin1, la page est en UTF-8 : le nom accentué n'a pas les mêmes octets. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('jeux')]
+    public function testEnregistreUnGroupeAccentue(string $jeuTable, string $jeuConnexion): void
+    {
+        $this->db->query('ALTER TABLE ' . $this->prefixe . "_params CONVERT TO CHARACTER SET $jeuTable");
+        $this->db->set_charset($jeuConnexion);
+        $this->db->query('INSERT INTO ' . $this->prefixe . "_params VALUES ('GEO_MODE_PUBLIC', 'Géoloc', 'L', '2')");
+        self::assertSame(0, EditionGroupe::enregistrer($this->db, $this->prefixe, 'Geoloc', [['nom' => 'GEO_MODE_PUBLIC', 'valeur' => '1']]));
+        self::assertSame(1, EditionGroupe::enregistrer($this->db, $this->prefixe, 'Géoloc', [['nom' => 'GEO_MODE_PUBLIC', 'valeur' => '1']]));
+        self::assertSame('1', $this->valeur('GEO_MODE_PUBLIC'));
+    }
+    /** @return iterable<string,array{string,string}> */
+    public static function jeux(): iterable
+    {
+        foreach (['latin1', 'utf8mb4'] as $table) {
+            foreach (['utf8', 'utf8mb4'] as $connexion) { yield "$table, connexion $connexion" => [$table, $connexion]; }
+        }
+    }
 }
