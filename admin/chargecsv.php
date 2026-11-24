@@ -217,6 +217,16 @@ if (isset($_REQUEST['action']))
 			msg('Pas de fichier spécifié.');
 			$missingargs=true;
 			}
+		 else
+			{
+			// Retour arrière après un chargement : le dépôt a été supprimé. Un nom interdit reste refusé par chemin_sur_ou_arret.
+			$attendu = \ActaLibre\Fichier\CheminSur::dans(UPLOAD_DIR, getparam('fileuploaded'), '/\.csv$/i', false);
+			if ($attendu !== null && !file_exists($attendu) && !is_link($attendu))
+				{
+				msg('Ce fichier a déjà été traité ou n\'est plus disponible : déposez-le à nouveau.');
+				$missingargs=true;
+				}
+			}
 	  }
 	if(!$TypeActes)
 	 {
