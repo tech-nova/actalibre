@@ -12,7 +12,7 @@ final class ControleProtection
     public const SONDE_MS = 2000;
     public const CONNEXION_MS = 1000;
     /** Causes enregistrées pour une sonde non vérifiée ; aucune ne contient de corps de réponse. */
-    public const CAUSES = ['non_prepare','budget','curl','delai','connexion','tls','transport','statut','contenu','public'];
+    public const CAUSES = ['non_prepare','fichier_absent','chemin_interdit','budget','curl','delai','connexion','tls','transport','statut','contenu','public'];
     private readonly string $depot;
     /** @var non-empty-string */
     private string $agent = 'ActaLibre';
@@ -79,7 +79,11 @@ final class ControleProtection
                     $f=$pret ? @fopen($p,'x') : false;
                     if ($f === false) { $pret=false; }
                     else { $temoins[]=$p; $pret=fwrite($f,$contenu) === strlen($contenu); fclose($f); }
-                } elseif (is_link($p) || !is_file($p)) { $pret=false; }
+                } elseif (is_link($p) || !is_file($p)) {
+                    $cause=!file_exists($p) && !is_link($p) ? 'fichier_absent' : 'chemin_interdit';
+                    $r[$cle]=['etat'=>'indetermine','http'=>null,'cause'=>$cause];
+                    continue;
+                }
                 $reste=self::BUDGET_MS-(int)((microtime(true)-$debut)*1000);
                 if (!$pret || $reste <= 0) { $r[$cle]=['etat'=>'indetermine','http'=>null,'cause'=>$pret ? 'budget' : 'non_prepare']; continue; }
                 $adresse=$url.implode('/',array_map('rawurlencode',explode('/',$chemin)));

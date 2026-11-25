@@ -25,7 +25,7 @@ final class DiagnosticInstallation
             return $rapport;
         } catch (\Throwable) { return new RapportProtection('indetermine','','',[],['Contrôle de protection indisponible.']); }
     }
-    public const ETATS = ['verifie'=>'vérifiée','refuse'=>'refusée','indetermine'=>'non vérifiable'];
+    public const ETATS = ['verifie'=>'vérifiée','refuse'=>'refusée','indetermine'=>'indéterminée'];
     private const SONDES = [
         'public'=>'Fichier public témoin (doit être servi)',
         'tmp'=>'Dossier tmp/',
@@ -39,6 +39,8 @@ final class DiagnosticInstallation
     ];
     private const CAUSES = [
         'non_prepare'=>'témoin non déposé (dossier absent ou non inscriptible)',
+        'fichier_absent'=>'fichier absent',
+        'chemin_interdit'=>'chemin non autorisé (dossier ou lien symbolique)',
         'budget'=>'durée totale du contrôle dépassée',
         'curl'=>'extension PHP cURL absente',
         'delai'=>'délai de réponse dépassé',
@@ -49,6 +51,33 @@ final class DiagnosticInstallation
         'contenu'=>'réponse 200 sans le contenu du témoin',
         'public'=>'non testé : le fichier public témoin n’a pas été vérifié',
     ];
+    /**
+     * L'état seul ne dit pas si l'essai a été exécuté : la cause précise pourquoi il reste sans conclusion.
+     * @param array{etat:string,http:?int,cause?:?string} $sonde
+     */
+    private static function resultatSonde(array $sonde): string
+    {
+        if ($sonde['etat']!=='indetermine') { return ucfirst(self::ETATS[$sonde['etat']] ?? $sonde['etat']); }
+        return match ($sonde['cause'] ?? null) {
+            'public','budget','curl' => 'Non testé',
+            'non_prepare','fichier_absent','chemin_interdit','delai','connexion','tls','transport' => 'Non vérifiable',
+            default => 'Indéterminé',
+        };
+    }
+    /** Bilan d'exécution distinct de la protection : une exposition reste un résultat concluant. */
+    private static function bilanControle(RapportProtection $r): string
+    {
+        $total=count($r->sondes);
+        if ($total===0) { return 'Aucun résultat de contrôle disponible'; }
+        $concluants=0;$nonTestes=0;
+        foreach ($r->sondes as $s) {
+            if (in_array($s['etat'],['verifie','refuse'],true)) { $concluants++; }
+            elseif (self::resultatSonde($s)==='Non testé') { $nonTestes++; }
+        }
+        if ($nonTestes===$total) { return 'Aucun essai HTTP réalisé'; }
+        if ($concluants===0) { return 'Contrôle sans résultat concluant'; }
+        return 'Contrôle '.($concluants===$total ? 'complet' : 'partiel').' : '.$concluants.' '.($concluants===1 ? 'essai concluant' : 'essais concluants').' sur '.$total;
+    }
     private static function sondes(RapportProtection $r): string
     {
         if ($r->sondes === []) { return ''; }
@@ -59,7 +88,7 @@ final class DiagnosticInstallation
             $explication=$cause === null ? '' : (self::CAUSES[$cause] ?? $cause);
             // Ces deux fichiers existent dans la livraison : aucun témoin n'est créé pour eux.
             if ($cause==='non_prepare' && in_array($nom,['composer','inventaire'],true)) { $explication='fichier absent ou chemin non autorisé'; }
-            $html.='<tr><td>'.Filtre::html(self::SONDES[$nom] ?? $nom).'</td><td>'.Filtre::html(ucfirst(self::ETATS[$s['etat']] ?? $s['etat'])).'</td><td>'.($s['http'] === null ? 'x' : (int)$s['http']).'</td><td>'.Filtre::html($explication).'</td></tr>';
+            $html.='<tr><td>'.Filtre::html(self::SONDES[$nom] ?? $nom).'</td><td>'.Filtre::html(self::resultatSonde($s)).'</td><td>'.($s['http'] === null ? 'x' : (int)$s['http']).'</td><td>'.Filtre::html($explication).'</td></tr>';
         }
         return $html.'</table>';
     }
@@ -75,6 +104,7 @@ final class DiagnosticInstallation
             default => null,
         };
         if ($alerte!==null) { $html.='<p class="erreur" role="alert">'.Filtre::html($alerte).'</p>'; }
+        if ($r->sondes!==[]) { $html.='<p>'.Filtre::html(self::bilanControle($r)).'.</p>'; }
         foreach ($r->avis as $avis) { $html.='<p>'.Filtre::html($avis).'</p>'; }
         $html.=self::sondes($r);
         if ($page!=='') {
@@ -124,11 +154,12 @@ final class DiagnosticInstallation
         $zone=new \DateTimeZone(date_default_timezone_get());
         $maintenant=($maintenant ?? new \DateTimeImmutable())->setTimezone($zone);
         $r=RapportProtection::lire($racine);
-        if ($r->version==='') { $protection='État : non contrôlé'; }
+        if ($r->version==='') { $protection='Aucun résultat de contrôle disponible'; }
         else {
             $jourControle=self::dateLocale($r->date,'d/m/Y');
             $date=$jourControle===null ? '' : ' le '.$jourControle;
-            $protection='État : '.(self::ETATS[$r->etat] ?? $r->etat).$date;
+            $protection=$r->etat==='indetermine' ? self::bilanControle($r).$date : 'État : '.(self::ETATS[$r->etat] ?? $r->etat).$date;
+            if ($r->etat==='refuse') { $protection.=' ; '.self::bilanControle($r); }
         }
         $analyse=self::analyserFichiers($racine,$base,$depot);
         $jour=' le '.$maintenant->format('d/m/Y');
