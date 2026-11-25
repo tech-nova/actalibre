@@ -26,7 +26,7 @@ final class ResumeProtectionTest extends BaseDiagnostic
     }
     public function testSansRapportNiFichierInconnu(): void
     {
-        self::assertSame(['protection'=>'État : non contrôlé','fichiers'=>'Aucun chemin inconnu détecté le 21/09/2026'], $this->resume());
+        self::assertSame(['protection'=>'Aucun résultat de contrôle disponible','fichiers'=>'Aucun chemin inconnu détecté le 21/09/2026'], $this->resume());
     }
     public function testRapportVerifieDateEnHeureLocale(): void
     {
@@ -39,7 +39,16 @@ final class ResumeProtectionTest extends BaseDiagnostic
     {
         $sondes = array_fill_keys(self::SONDES, ['etat'=>'indetermine','http'=>null,'cause'=>'public']);
         self::assertTrue((new RapportProtection('indetermine','1.2.0','http://localhost/',$sondes,[],'2026-09-15T08:00:00Z'))->enregistrer($this->root));
-        self::assertSame('État : indéterminée le 15/09/2026', $this->resume()['protection']);
+        self::assertSame('Aucun essai HTTP réalisé le 15/09/2026', $this->resume()['protection']);
+    }
+
+    public function testLeResumeDistingueLeControlePartiel(): void
+    {
+        $sondes = array_fill_keys(self::SONDES, ['etat'=>'verifie','http'=>403,'cause'=>null]);
+        $sondes['public'] = $sondes['css'] = ['etat'=>'verifie','http'=>200,'cause'=>null];
+        $sondes['inventaire'] = ['etat'=>'indetermine','http'=>null,'cause'=>'non_prepare'];
+        self::assertTrue((new RapportProtection('indetermine','1.2.0','http://localhost/',$sondes,[],'2026-09-15T08:00:00Z'))->enregistrer($this->root));
+        self::assertSame('Contrôle partiel : 8 essais concluants sur 9 le 15/09/2026', $this->resume()['protection']);
     }
     public function testCheminsInconnusAuSingulierEtAuPluriel(): void
     {

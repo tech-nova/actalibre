@@ -185,6 +185,7 @@ final class PageInstallation
             echo '<link rel="icon" type="image/png" href="img/favicon-' . $taille . 'x' . $taille . '.png" sizes="' . $taille . 'x' . $taille . '">';
         }
         echo '<link rel="apple-touch-icon" href="img/apple-touch-icon.png" sizes="180x180">';
+        echo '<link rel="stylesheet" href="tools/css/diagnostic-installation.css">';
         echo '<style>body{font:1rem/1.5 system-ui;background:#f5f4ef;color:#18392f;margin:0;padding:2rem 1rem}main{max-width:42rem;margin:auto;background:white;padding:2rem;border-radius:.5rem}fieldset{margin:1rem 0;border:1px solid #bccbc3}label{display:block;margin:.7rem 0}input:not([type=checkbox]),textarea{box-sizing:border-box;display:block;width:100%;padding:.5rem;font:inherit}button{padding:.7rem 1.2rem;background:#18392f;color:white;border:0;border-radius:.2rem}a{color:#18392f}code{overflow-wrap:anywhere;background:#eef4ef;padding:0 .2rem}.message{padding:1rem;background:#eef4ef}.erreur{padding:1rem;color:#a11a1a;background:#fff1f0;border:1px solid #a11a1a;border-left-width:.3rem;border-radius:.25rem;font-weight:600}.etape{color:#4b6a5f;margin:0}</style></head><body><main><h1>Installer ActaLibre</h1>';
         if ($ecran !== null) {
             echo '<p class="etape">Étape ' . ($ecran === self::ECRAN_CONNEXION ? '1 sur 2 : connexion à la base' : '2 sur 2 : administrateur') . '</p>';

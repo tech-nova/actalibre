@@ -39,6 +39,8 @@ final class DiagnosticInstallation
     ];
     private const CAUSES = [
         'non_prepare'=>'témoin non déposé (dossier absent ou non inscriptible)',
+        'fichier_absent'=>'fichier absent',
+        'chemin_interdit'=>'chemin non autorisé (dossier ou lien symbolique)',
         'budget'=>'durée totale du contrôle dépassée',
         'curl'=>'extension PHP cURL absente',
         'delai'=>'délai de réponse dépassé',
@@ -49,6 +51,34 @@ final class DiagnosticInstallation
         'contenu'=>'réponse 200 sans le contenu du témoin',
         'public'=>'non testé : le fichier public témoin n’a pas été vérifié',
     ];
+    /**
+     * L'état seul ne dit pas si l'essai a été exécuté : la cause précise pourquoi il reste sans conclusion.
+     * @param array{etat:string,http:?int,cause?:?string} $sonde
+     */
+    private static function resultatSonde(array $sonde): string
+    {
+        if ($sonde['etat']==='verifie') { return 'Vérifié'; }
+        if ($sonde['etat']==='refuse') { return 'En défaut'; }
+        return match ($sonde['cause'] ?? null) {
+            'public','budget','curl' => 'Non testé',
+            'non_prepare','fichier_absent','chemin_interdit','delai','connexion','tls','transport' => 'Non vérifiable',
+            default => 'Indéterminé',
+        };
+    }
+    /** Bilan d'exécution distinct de la protection : une exposition reste un résultat concluant. */
+    private static function bilanControle(RapportProtection $r): string
+    {
+        $total=count($r->sondes);
+        if ($total===0) { return 'Aucun résultat de contrôle disponible'; }
+        $concluants=0;$nonTestes=0;
+        foreach ($r->sondes as $s) {
+            if (in_array($s['etat'],['verifie','refuse'],true)) { $concluants++; }
+            elseif (self::resultatSonde($s)==='Non testé') { $nonTestes++; }
+        }
+        if ($nonTestes===$total) { return 'Aucun essai HTTP réalisé'; }
+        if ($concluants===0) { return 'Contrôle sans résultat concluant'; }
+        return 'Contrôle '.($concluants===$total ? 'complet' : 'partiel').' : '.$concluants.' '.($concluants===1 ? 'essai concluant' : 'essais concluants').' sur '.$total;
+    }
     private static function sondes(RapportProtection $r): string
     {
         if ($r->sondes === []) { return ''; }
@@ -56,7 +86,10 @@ final class DiagnosticInstallation
         $html='<p>Dernier contrôle : '.Filtre::html($quand ?? $r->date).', adresse '.Filtre::html($r->origine).'</p><table><tr><th>Essai</th><th>Résultat</th><th>HTTP</th><th>Cause</th></tr>';
         foreach ($r->sondes as $nom=>$s) {
             $cause=$s['cause'] ?? null;
-            $html.='<tr><td>'.Filtre::html(self::SONDES[$nom] ?? $nom).'</td><td>'.Filtre::html(self::ETATS[$s['etat']] ?? $s['etat']).'</td><td>'.($s['http'] === null ? '—' : (int)$s['http']).'</td><td>'.Filtre::html($cause === null ? '' : (self::CAUSES[$cause] ?? $cause)).'</td></tr>';
+            $explication=$cause === null ? '' : (self::CAUSES[$cause] ?? $cause);
+            // Ces deux fichiers existent dans la livraison : aucun témoin n'est créé pour eux.
+            if ($cause==='non_prepare' && in_array($nom,['composer','inventaire'],true)) { $explication='fichier absent ou chemin non autorisé'; }
+            $html.='<tr><td>'.Filtre::html(self::SONDES[$nom] ?? $nom).'</td><td>'.Filtre::html(self::resultatSonde($s)).'</td><td>'.($s['http'] === null ? 'x' : (int)$s['http']).'</td><td>'.Filtre::html($explication).'</td></tr>';
         }
         return $html.'</table>';
     }
@@ -64,11 +97,21 @@ final class DiagnosticInstallation
     public static function html(string $racine,string $base,string $depot,string $page=''): string
     {
         $r=RapportProtection::lire($racine);
-        $html='<h2>Protection et fichiers du site</h2><p>Contrôle : '.Filtre::html(self::ETATS[$r->etat] ?? $r->etat).'.</p>';
-        if ($r->avertissement()!==null) { $html.='<p class="erreur">'.Filtre::html($r->avertissement()).'</p>'; }
-        if ($page!=='') { $html.='<p><a href="'.Filtre::html($page).'">Détail et nouveau contrôle des protections</a></p>'; }
+        $html='<h2>Protection et fichiers du site</h2>';
+        [$classe,$message]=match (true) {
+            $r->sondes===[] => ['avertissement','Aucun résultat de contrôle disponible. La protection des fichiers privés reste à vérifier.'],
+            $r->etat==='refuse' => ['erreur','Des fichiers privés sont accessibles publiquement.'],
+            $r->etat==='indetermine' => ['avertissement','Certaines protections n’ont pas pu être vérifiées.'],
+            default => ['information','Les protections contrôlées sont vérifiées.'],
+        };
+        $html.='<p class="diagnostic-protection '.$classe.'" role="status">'.Filtre::html($message).'</p>';
+        if ($r->sondes!==[]) { $html.='<p>'.Filtre::html(self::bilanControle($r)).'.</p>'; }
         foreach ($r->avis as $avis) { $html.='<p>'.Filtre::html($avis).'</p>'; }
         $html.=self::sondes($r);
+        if ($page!=='') {
+            $libelle=$r->sondes===[] ? 'Contrôler les protections' : 'Relancer le contrôle';
+            $html.='<p><a href="'.Filtre::html($page).'">'.$libelle.'</a></p>';
+        }
         $analyse=self::analyserFichiers($racine,$base,$depot);
         if ($analyse['etat']==='depot') {
             return $html.'<p>Analyse des fichiers non réalisée : réglage UPLOAD_DIR invalide. Indiquez un chemin relatif interne au dossier admin, sans « .. ».</p>';
@@ -112,11 +155,12 @@ final class DiagnosticInstallation
         $zone=new \DateTimeZone(date_default_timezone_get());
         $maintenant=($maintenant ?? new \DateTimeImmutable())->setTimezone($zone);
         $r=RapportProtection::lire($racine);
-        if ($r->version==='') { $protection='État : non contrôlé'; }
+        if ($r->version==='') { $protection='Aucun résultat de contrôle disponible'; }
         else {
             $jourControle=self::dateLocale($r->date,'d/m/Y');
             $date=$jourControle===null ? '' : ' le '.$jourControle;
-            $protection='État : '.(self::ETATS[$r->etat] ?? $r->etat).$date;
+            $protection=$r->etat==='indetermine' ? self::bilanControle($r).$date : 'État : '.(self::ETATS[$r->etat] ?? $r->etat).$date;
+            if ($r->etat==='refuse') { $protection.=' ; '.self::bilanControle($r); }
         }
         $analyse=self::analyserFichiers($racine,$base,$depot);
         $jour=' le '.$maintenant->format('d/m/Y');

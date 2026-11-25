@@ -22,7 +22,7 @@ if ($methode === 'POST') {
     } catch (Throwable) { $message = 'Contrôle non réalisé. Vérifiez l’adresse et recommencez.'; }
     finally { $verrou?->liberer(); }
 }
-open_page('Protection et fichiers du site', $root);
+open_page('Protection et fichiers du site', $root, null, null, '<link rel="stylesheet" href="'.\ActaLibre\Securite\Filtre::html($root.'/tools/css/diagnostic-installation.css').'" type="text/css" />');
 navadmin($root, 'Protection et fichiers du site');
 echo '<div id="col_main_adm"><h1>Protection et fichiers du site</h1>';
 if ($message !== '') { echo '<p role="status">'.\ActaLibre\Securite\Filtre::html($message).'</p>'; }
