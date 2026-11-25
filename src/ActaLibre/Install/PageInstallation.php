@@ -215,10 +215,7 @@ final class PageInstallation
                     self::champ($nom, $label, $donnees);
                 }
             } else {
-                echo '</fieldset><fieldset><legend>Nouvel administrateur</legend><p>Pour prouver que vous contrôlez ce serveur, déposez par FTP un fichier vide nommé <code>' . Filtre::html($preuve) . '</code> dans le dossier <code>_config/</code>, puis validez ce formulaire. Ce nom est valable une heure, dans ce navigateur ; le fichier est supprimé après la création du compte.</p>';
-                foreach (['login' => 'Identifiant', 'courriel' => 'Courriel', 'mot_de_passe' => 'Mot de passe', 'confirmation' => 'Confirmation du mot de passe'] as $nom => $label) {
-                    self::champ($nom, $label, $donnees);
-                }
+                echo '</fieldset><fieldset><legend>Nouvel administrateur</legend>' . FormulaireAdministrateur::consigne($preuve) . FormulaireAdministrateur::champs($donnees);
             }
             echo '</fieldset><p><button type="submit">Installer ActaLibre</button></p></form>';
         } elseif ($contenu === null) {

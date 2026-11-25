@@ -141,4 +141,61 @@ final class MiseAJourParcoursTest extends TestCase
         for ($i=0;$i<100 && str_contains($r->corps,'name="action" value="continuer"');$i++) $r=$c->post('/update.php',['url_site'=>$this->site->url().'/','action'=>'continuer','jeton'=>$this->jeton($r)]);
         self::assertLessThan(100,$i);self::assertStringContainsString('à jour',$r->corps);self::assertSame('',$this->site->journal());
     }
+    /** Site ActaLibre complet, laissé devant l'action demandée ; $distincts : comptes dans la seconde base. */
+    private function preparerActaLibre(string $action,bool $distincts=false): void
+    {
+        $this->preparer(deuxBases:$distincts);$c=$this->site->client();
+        $r=$c->post('/update.php',['url_site'=>$this->site->url().'/','action'=>'demarrer','jeton'=>$this->jeton($c->get('/update.php')),'login'=>'admin','mot_de_passe'=>SourceExpoActes::MOT_DE_PASSE]);
+        for ($i=0;$i<100 && str_contains($r->corps,'name="action" value="continuer"');$i++) $r=$c->post('/update.php',['url_site'=>$this->site->url().'/','action'=>'continuer','jeton'=>$this->jeton($r)]);
+        self::assertStringContainsString('à jour',$r->corps);$p=$this->site->prefixe;
+        if ($action==='produit') $this->site->base->query("UPDATE {$p}_params SET valeur='0.9.0' WHERE param='ACTALIBRE_VERSION'");
+        else $this->site->base->query("INSERT INTO {$p}_params (param,groupe,ordre,type,valeur,listval,libelle,aide) VALUES ('ACTALIBRE_INSTALLATION','Hidden',100,'C','reste','','','')");
+    }
+    /** @return array{string,string} jeton et chemin de la preuve */
+    private function secours(Client $c): array
+    {
+        $r=$c->get('/update.php');self::assertSame(200,$r->statut,$r->corps);
+        self::assertStringContainsString('Identifiants perdus : créer un nouvel administrateur',$r->corps);
+        self::assertSame(1,preg_match('/admin-[0-9a-f]{32}\.txt/',$r->corps,$m),$r->corps);
+        return [$this->jeton($r),$this->site->racine.'/_config/'.$m[0]];
+    }
+    public static function secoursActaLibre(): iterable
+    { yield 'produit'=>['produit',false];yield 'nettoyer'=>['nettoyer',false];yield 'produit, comptes distincts'=>['produit',true]; }
+    #[DataProvider('secoursActaLibre')]
+    public function testLaPreuveFtpDebloqueUnSiteActaLibre(string $action,bool $distincts): void
+    {
+        $this->preparerActaLibre($action,$distincts);$c=$this->site->client();$p=$this->site->prefixe;
+        $comptes=$this->comptesDistincts??$this->site->base;$u=$distincts?$p.'u':$p;
+        $avant=$comptes->query("SELECT * FROM {$u}_user3 ORDER BY ID")->fetch_all(MYSQLI_ASSOC);
+        [$jeton,$preuve]=$this->secours($c);
+        $f=['url_site'=>$this->site->url().'/','action'=>'creer','jeton'=>$jeton,'login'=>'nouveau','courriel'=>'nouveau@example.org','mot_de_passe'=>'Nouveau-2026','confirmation'=>'Nouveau-2026'];
+        $r=$c->post('/update.php',$f);self::assertSame(400,$r->statut);self::assertStringContainsString('Fichier de preuve introuvable',$r->corps);
+        // La preuve d'un autre navigateur ne vaut pas pour celui-ci.
+        [,$autre]=$this->secours($this->site->deuxiemeClient());touch($autre);
+        self::assertSame(400,$c->post('/update.php',$f)->statut);
+        touch($preuve);
+        foreach ([['login'=>'admin'],['login'=>'ADMIN'],['confirmation'=>'Autre-2026'],['mot_de_passe'=>'court','confirmation'=>'court']] as $ecart) {
+            $r=$c->post('/update.php',array_replace($f,$ecart));
+            self::assertSame(400,$r->statut);self::assertStringContainsString('<details open>',$r->corps);self::assertFileExists($preuve);
+        }
+        self::assertSame($avant,$comptes->query("SELECT * FROM {$u}_user3 ORDER BY ID")->fetch_all(MYSQLI_ASSOC),'Aucun refus ne touche aux comptes.');
+        // Trop d'échecs depuis cette adresse : la preuve FTP reste une issue.
+        $limiteur=new \ActaLibre\Compte\Limiteur($comptes,$u.'_essai');
+        for ($i=0;$i<\ActaLibre\Compte\Limiteur::MAX_ADRESSE;$i++) $limiteur->noterEchec('inconnu','127.0.0.1');
+        $r=$c->post('/update.php',['url_site'=>$this->site->url().'/','action'=>$action,'jeton'=>$jeton,'login'=>'admin','mot_de_passe'=>SourceExpoActes::MOT_DE_PASSE]);
+        self::assertStringContainsString('Trop de tentatives',$r->corps);
+        $r=$c->post('/update.php',$f);
+        self::assertSame(200,$r->statut,$r->corps);self::assertStringContainsString('à jour',$r->corps);
+        self::assertFileDoesNotExist($preuve);self::assertFileExists($autre);
+        $compte=$comptes->query("SELECT level,hashpass FROM {$u}_user3 WHERE login='nouveau'")->fetch_assoc();
+        self::assertSame('9',(string)$compte['level']);self::assertFalse(\ActaLibre\Compte\MotDePasse::estAncienFormat($compte['hashpass']));
+        self::assertTrue(\ActaLibre\Compte\MotDePasse::verifier('Nouveau-2026',$compte['hashpass']));
+        self::assertSame($avant,$comptes->query("SELECT * FROM {$u}_user3 WHERE login<>'nouveau' ORDER BY ID")->fetch_all(MYSQLI_ASSOC));
+        self::assertSame('0',$this->site->base->query("SELECT COUNT(*) FROM {$p}_params WHERE param='ACTALIBRE_INSTALLATION' OR (param='ACTALIBRE_VERSION' AND valeur='0.9.0')")->fetch_row()[0]);
+        // Le site à jour ne propose plus aucune création.
+        $r=$c->get('/update.php');self::assertStringNotContainsString('<details',$r->corps);
+        $c->post('/update.php',array_replace($f,['login'=>'second']));
+        self::assertSame('0',$comptes->query("SELECT COUNT(*) FROM {$u}_user3 WHERE login='second'")->fetch_row()[0]);
+        self::assertSame('',$this->site->journal());
+    }
 }

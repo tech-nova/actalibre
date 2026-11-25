@@ -78,13 +78,7 @@ final class Installateur
                     throw new \RuntimeException('Identifiants administrateur refusés.');
                 }
             } else {
-                if (!$preuveFtp) {
-                    throw new \RuntimeException('Fichier de preuve introuvable : déposez-le par FTP dans _config/ puis validez à nouveau.');
-                }
-                Administrateur::valider($login, $courriel, $motDePasse);
-                if ($motDePasse !== $confirmation) {
-                    throw new \RuntimeException('Les mots de passe doivent être identiques.');
-                }
+                FormulaireAdministrateur::controler($preuveFtp, $login, $courriel, $motDePasse, $confirmation);
             }
             $donnees = new DonneesInitiales($this->racine);
             $donnees->creerParametres($lien, $actes->prefixe);

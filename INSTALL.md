@@ -15,7 +15,7 @@ L’archive doit être transférée en entier, fichiers commençant par un point
 
 Le fichier de connexion est publié complet dans `_config/connect.inc.php`, sans remplacer un fichier existant. Si la publication automatique est impossible, déposer par FTP le contenu exact affiché, fermer cette page (elle contient les accès MySQL), puis rouvrir `install.php` pour l’écran 2. Pour corriger des accès erronés, supprimer ce fichier par FTP et recommencer l’écran 1.
 
-Si l’écran 1 désigne une base existante (ExpoActes 3.2.4 ou ActaLibre), `install.php` renvoie vers `update.php`, qui demande les identifiants d’un administrateur existant. Le groupe facultatif « Base des comptes distincte » sert à une table des comptes située dans une autre base ou sous un autre préfixe. Le rattachement ne crée ni tables ni comptes.
+Si l’écran 1 désigne une base existante (ExpoActes 3.2.4 ou ActaLibre), `install.php` renvoie vers `update.php`, qui demande les identifiants d’un administrateur existant ou, s’ils sont perdus, une preuve FTP pour en créer un nouveau. Le groupe facultatif « Base des comptes distincte » sert à une table des comptes située dans une autre base ou sous un autre préfixe. Le rattachement ne crée ni tables ni comptes.
 
 ## Migration depuis ExpoActes 3.2.4 uniquement
 
@@ -39,7 +39,7 @@ Pour restaurer une ancienne sauvegarde d’actes `.bea` après migration, recopi
 
 Sur de grosses tables MyISAM, un `ALTER TABLE` peut dépasser le délai PHP ou Apache. La reprise ne supprime pas cette limite : faire augmenter les délais de l’hébergement si la même étape échoue à chaque essai. Pour revenir en arrière, restaurer les fichiers **et toutes les bases** sauvegardées, ainsi que l’ancienne version de PHP si nécessaire ; les empreintes converties ne sont plus lisibles par ExpoActes.
 
-Depuis ActaLibre, sauvegarder également les fichiers et bases, transférer le nouveau code par-dessus le site puis ouvrir `update.php`. L’archive ne contient ni `_config/` ni `admin/_upload/` : les personnalisations et les modèles de chargement ne sont pas écrasés. Ne pas personnaliser `_config_init/`, remplacé à chaque version. Vérifier ensuite la liste des fichiers non reconnus. À schéma identique, seul le produit est mis à jour après authentification. Aucune migration vers un autre schéma ActaLibre n’est livrée en 1.0.
+Depuis ActaLibre, sauvegarder également les fichiers et bases, transférer le nouveau code par-dessus le site puis ouvrir `update.php`. L’archive ne contient ni `_config/` ni `admin/_upload/` : les personnalisations et les modèles de chargement ne sont pas écrasés. Ne pas personnaliser `_config_init/`, remplacé à chaque version. Vérifier ensuite la liste des fichiers non reconnus. À schéma identique, seul le produit est mis à jour après authentification. Si les identifiants sont perdus ou refusés, la rubrique « Identifiants perdus : créer un nouvel administrateur » d’`update.php` fonctionne comme pour la migration : déposer par FTP, dans `_config/`, un fichier vide portant le nom affiché, choisir un identifiant encore inutilisé, puis valider ; la mise à jour démarre aussitôt avec ce compte. Les comptes existants ne sont pas modifiés ; le nouvel administrateur peut ensuite changer leur mot de passe. Cette rubrique n’apparaît que si une mise à jour ou un nettoyage est à faire. Aucune migration vers un autre schéma ActaLibre n’est livrée en 1.0.
 
 ## Stockage et protections
 

@@ -2,6 +2,14 @@
 
 ## [Non publié]
 
+### Ajouté
+
+- `update.php` : lorsque les identifiants sont perdus, un nouvel administrateur peut être créé sur preuve FTP pour toute mise à jour d’ActaLibre ou tout nettoyage, comme pour une migration depuis ExpoActes. Les comptes existants ne sont pas modifiés.
+
+### Modifié
+
+- `install.php` et `update.php` partagent le formulaire et les contrôles de création d’un administrateur ; ses champs sont désormais obligatoires dans `install.php`.
+
 ## [1.1.3] - 2026-11-24
 
 ### Corrigé
