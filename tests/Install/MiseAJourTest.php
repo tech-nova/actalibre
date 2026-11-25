@@ -81,12 +81,27 @@ class MiseAJourTest extends BaseMiseAJour
         self::assertCount(8,glob($this->racine.'/admin/depot/*.m_csv'));
         self::assertSame('personnel',file_get_contents($this->racine.'/admin/depot/N-NimegueV3.m_csv'));
     }
+    public static function actionsCourtes(): iterable { yield 'produit'=>['produit'];yield 'nettoyer'=>['nettoyer']; }
+    #[DataProvider('actionsCourtes')]
+    public function testLeControleDesProtectionsEstRefait(string $action): void
+    {
+        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION',$action==='produit'?'0.9.0':'1.2.0');
+        if ($action==='nettoyer') $this->marqueur('ACTALIBRE_INSTALLATION','reste');
+        $this->identifier();
+        // Rapport de la version précédente : il ne vaut plus pour cette livraison.
+        $noms=['public','tmp','tmp_php','configuration','css','installation','depot','composer','inventaire'];
+        self::assertTrue((new \ActaLibre\Install\RapportProtection('verifie','0.9.0','https://exemple.test/',array_fill_keys($noms,['etat'=>'verifie','http'=>403,'cause'=>null])))->enregistrer($this->racine));
+        self::assertSame('',\ActaLibre\Install\RapportProtection::lire($this->racine)->version);
+        self::assertTrue($this->lancer($action)['terminee']);
+        $r=\ActaLibre\Install\RapportProtection::lire($this->racine);
+        self::assertSame('1.2.0',$r->version);self::assertSame('https://exemple.test/',$r->origine);self::assertCount(9,$r->sondes);
+    }
     public function testUnDepotInvalideNEmpechePasLaMiseAJourDuProduit(): void
     {
         $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','0.9.0');
         $this->marqueur('UPLOAD_DIR','../dehors');$this->identifier();
         $r=$this->lancer('produit');
-        self::assertTrue($r['terminee']);self::assertCount(1,$r['avis']);
+        self::assertTrue($r['terminee']);self::assertCount(2,$r['avis']);self::assertContains('Contrôle de protection indisponible.',$r['avis']);
         self::assertSame('1.2.0',$this->valeur('ACTALIBRE_VERSION'));
     }
     public function testLaMigrationFournitLesModelesCsv(): void

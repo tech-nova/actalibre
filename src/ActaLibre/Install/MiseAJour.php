@@ -33,7 +33,9 @@ final class MiseAJour
             if ($action==='produit') {
                 $this->marquer($c,'ACTALIBRE_VERSION',$livraison->version);
                 $this->apresEffet?->__invoke('produit');
-                return $this->resultatFinal($c,ModelesCsv::completerSite($this->racine,$c));
+                $resultat=$this->resultatFinal($c,ModelesCsv::completerSite($this->racine,$c));
+                $resultat['avis']=array_merge($resultat['avis'],$this->protection($c,$url));
+                return $resultat;
             }
             if ($action==='nettoyer') {
                 foreach ($e->restes as $nom) {
@@ -41,7 +43,7 @@ final class MiseAJour
                     $this->apresEffet?->__invoke('nettoyage:'.$nom);
                 }
                 $nouveau=EtatExploitation::lire($c,$this->racine.'/composer.json');
-                return ['terminee'=>true,'diagnostic'=>$nouveau->diagnostic,'avis'=>[]];
+                return ['terminee'=>true,'diagnostic'=>$nouveau->diagnostic,'avis'=>$this->protection($c,$url)];
             }
             $m=new MigrationExpoActes($this->racine,$this->apresEffet);
             $a=$e->avancement;
@@ -79,6 +81,16 @@ final class MiseAJour
         } finally {
             foreach (array_reverse($verrous) as $verrou) $verrou->liberer();
         }
+    }
+    /**
+     * Le rapport d'une version précédente n'est plus lu : le contrôle est refait, sans pouvoir faire échouer la mise à jour.
+     * @return list<string>
+     */
+    private function protection(ConnexionsSite $c,string $url): array
+    {
+        try { $depot=DiagnosticInstallation::depot($c->actes,$c->configuration->actes->prefixe); }
+        catch (\Throwable) { return ['Contrôle de protection indisponible.']; }
+        return DiagnosticInstallation::controler($this->racine,$url,false,$depot)->avis;
     }
     /** Deux accès peuvent employer des identifiants différents pour le même verrou. */
     private function memePerimetre(AccesMysql $a,AccesMysql $b): bool

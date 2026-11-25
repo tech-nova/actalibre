@@ -2,6 +2,11 @@
 
 ## [Non publié]
 
+### Corrigé
+
+- `update.php` : le contrôle des protections est lancé après une mise à jour du produit ou un nettoyage. Le rapport de la version précédente n'étant plus valable, l'écran final annonçait une protection indéterminée sans l'avoir contrôlée.
+- `install.php` et `update.php` : le bilan final donne un lien vers la page de contrôle des protections.
+
 ## [1.2.0] - 2026-11-25
 
 ### Ajouté
