@@ -1,0 +1,27 @@
+.diagnostic-protection {
+    padding: 1rem;
+    border: 1px solid;
+    border-left-width: .3rem;
+    border-radius: .25rem;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+}
+
+.diagnostic-protection.erreur {
+    color: #a11a1a;
+    background: #fff1f0;
+    border-color: #a11a1a;
+}
+
+.diagnostic-protection.avertissement {
+    color: #714800;
+    background: #fff7df;
+    border-color: #714800;
+}
+
+.diagnostic-protection.information {
+    color: #145a8d;
+    background: #eef6fc;
+    border-color: #145a8d;
+}

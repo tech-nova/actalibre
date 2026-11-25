@@ -44,32 +44,30 @@ final class DiagnosticInstallationTest extends BaseDiagnostic
     {
         $html = DiagnosticInstallation::html($this->root, 'base', '_upload');
         self::assertStringContainsString('Aucun résultat de contrôle disponible.', $html);
+        self::assertStringContainsString('<p class="diagnostic-protection avertissement" role="status">', $html);
         self::assertStringNotContainsString('Contrôle non réalisé.', $html);
         self::assertStringNotContainsString('<table>', $html);
     }
 
     public static function etatsDuRapport(): iterable
     {
-        yield 'protection refusée' => ['refuse', 200, null, 'Des fichiers privés sont accessibles publiquement.'];
-        yield 'protection indéterminée' => ['indetermine', null, 'delai', 'Certaines protections n’ont pas pu être vérifiées.'];
-        yield 'protection vérifiée' => ['verifie', 403, null, null];
+        yield 'protection refusée' => ['refuse', 200, null, 'erreur', 'Des fichiers privés sont accessibles publiquement.'];
+        yield 'protection indéterminée' => ['indetermine', null, 'delai', 'avertissement', 'Certaines protections n’ont pas pu être vérifiées.'];
+        yield 'protection vérifiée' => ['verifie', 403, null, 'information', 'Les protections contrôlées sont vérifiées.'];
     }
 
     #[DataProvider('etatsDuRapport')]
-    public function testLeBandeauSignaleLesProtectionsRefuseesOuNonVerifiables(string $etat, ?int $http, ?string $cause, ?string $alerte): void
+    public function testLeBandeauDistingueErreurAvertissementEtInformation(string $etat, ?int $http, ?string $cause, string $classe, string $message): void
     {
         $sondes = array_fill_keys(['tmp','tmp_php','configuration','installation','depot','composer','inventaire'], ['etat'=>'verifie', 'http'=>403, 'cause'=>null]);
         $sondes['public'] = $sondes['css'] = ['etat'=>'verifie', 'http'=>200, 'cause'=>null];
         $sondes['tmp'] = ['etat'=>$etat, 'http'=>$http, 'cause'=>$cause];
         self::assertTrue((new RapportProtection($etat, '1.2.0', 'https://exemple.test/', $sondes))->enregistrer($this->root));
         $html = DiagnosticInstallation::html($this->root, 'base', '_upload', 'admin/protection.php');
-        if ($alerte === null) {
-            self::assertStringNotContainsString('class="erreur"', $html);
-        } else {
-            $message = '<p class="erreur" role="alert">'.$alerte.'</p>';
-            self::assertStringContainsString($message, $html);
-            self::assertLessThan(strpos($html, '<table>'), strpos($html, $message));
-        }
+        $bandeau = '<p class="diagnostic-protection '.$classe.'" role="status">'.$message.'</p>';
+        self::assertStringContainsString($bandeau, $html);
+        self::assertLessThan(strpos($html, '<table>'), strpos($html, $bandeau));
+        self::assertStringNotContainsString('role="alert"', $html);
         self::assertStringNotContainsString('Consultez le contrôle', $html);
         self::assertStringContainsString('href="admin/protection.php">Relancer le contrôle</a>', $html);
         self::assertLessThan(strpos($html, '>Relancer le contrôle</a>'), strpos($html, '</table>'));
@@ -112,7 +110,7 @@ final class DiagnosticInstallationTest extends BaseDiagnostic
         self::assertStringNotContainsString('Contrôle non réalisé.', $html);
         self::assertStringNotContainsString('Contrôle :', $html);
         self::assertStringNotContainsString('Consultez le contrôle des protections.', $html);
-        self::assertStringContainsString('<td>composer.json</td><td>Vérifiée</td><td>403</td>', $html);
+        self::assertStringContainsString('<td>composer.json</td><td>Vérifié</td><td>403</td>', $html);
     }
 
     public static function causesSansConclusion(): iterable
@@ -155,7 +153,8 @@ final class DiagnosticInstallationTest extends BaseDiagnostic
         self::assertTrue((new RapportProtection('refuse', '1.2.0', 'https://exemple.test/', $sondes))->enregistrer($this->root));
         $html = DiagnosticInstallation::html($this->root, 'base', '_upload');
         self::assertStringContainsString('Contrôle partiel : 2 essais concluants sur 9.', $html);
-        self::assertStringContainsString('<p class="erreur" role="alert">Des fichiers privés sont accessibles publiquement.</p>', $html);
+        self::assertStringContainsString('<p class="diagnostic-protection erreur" role="status">Des fichiers privés sont accessibles publiquement.</p>', $html);
+        self::assertStringContainsString('<td>Dossier tmp/</td><td>En défaut</td><td>200</td>', $html);
     }
 
     public function testUnInventaireRemplaceParUnLienNestPasSignaleCommeAbsent(): void

@@ -57,13 +57,15 @@ Le contrôle HTTP utilise l’adresse canonique validée, un témoin public et d
 
 Les résultats distinguent plusieurs situations :
 
-- **Vérifiée** : la réponse confirme la protection attendue. Pour les témoins public et CSS, elle confirme au contraire qu’ils sont bien servis.
-- **Refusée** : la protection est en défaut, un fichier privé est accessible publiquement. Un bandeau rouge le signale, même si d’autres essais n’ont pas abouti.
+- **Vérifié** : l’essai confirme la protection attendue. Pour les témoins public et CSS, il confirme au contraire qu’ils sont bien servis.
+- **En défaut** : un fichier privé est accessible publiquement. Un bandeau rouge le signale, même si d’autres essais n’ont pas abouti.
 - **Non testé** : la sonde HTTP n’a pas été exécutée, faute de témoin public validé, de budget de temps ou de cURL.
 - **Non vérifiable** : un obstacle identifié empêche de vérifier, par exemple un fichier absent, un témoin impossible à déposer, une connexion impossible ou un certificat refusé.
 - **Indéterminé** : la réponse reçue ne permet pas de conclure (statut ou contenu inattendu), ou un ancien rapport ne précise pas la cause.
 
 Le bilan indique **contrôle partiel** si certains essais sont concluants et d’autres non. Le nombre d’essais concluants inclut aussi les expositions détectées : un contrôle complet ne signifie pas nécessairement que les protections sont correctes. Si aucun essai n’est concluant, le bilan le précise ; si toutes les sondes ont été écartées avant leur exécution HTTP, il indique « Aucun essai HTTP réalisé ». Sans rapport valable pour la version courante, il indique « Aucun résultat de contrôle disponible » : cette absence ne permet pas de savoir si les essais n’ont jamais eu lieu ou si leur rapport n’a pas pu être enregistré. Dans les bilans d’installation et de mise à jour, le lien « Relancer le contrôle » apparaît sous le tableau.
+
+Le bandeau du bilan distingue trois niveaux : une erreur rouge si un fichier privé est accessible publiquement, un avertissement orangé si le contrôle est incomplet ou son résultat indisponible, et une information bleue si toutes les protections sont vérifiées.
 
 Une réponse 500, un délai dépassé, une URL incorrecte ou l’absence de cURL ne prouvent pas une protection. Si le fichier public témoin n’est pas servi, les autres essais ne sont pas tentés : vérifier d’abord que le serveur peut joindre sa propre adresse (pare-feu, DNS interne, redirection vers HTTPS). L’installation et SQL peuvent aboutir avec un avertissement. Un serveur PHP intégré, qui ne lit pas les `.htaccess`, ne valide pas cette protection.
 

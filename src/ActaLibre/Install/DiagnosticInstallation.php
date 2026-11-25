@@ -57,7 +57,8 @@ final class DiagnosticInstallation
      */
     private static function resultatSonde(array $sonde): string
     {
-        if ($sonde['etat']!=='indetermine') { return ucfirst(self::ETATS[$sonde['etat']] ?? $sonde['etat']); }
+        if ($sonde['etat']==='verifie') { return 'Vérifié'; }
+        if ($sonde['etat']==='refuse') { return 'En défaut'; }
         return match ($sonde['cause'] ?? null) {
             'public','budget','curl' => 'Non testé',
             'non_prepare','fichier_absent','chemin_interdit','delai','connexion','tls','transport' => 'Non vérifiable',
@@ -97,13 +98,13 @@ final class DiagnosticInstallation
     {
         $r=RapportProtection::lire($racine);
         $html='<h2>Protection et fichiers du site</h2>';
-        $alerte=match (true) {
-            $r->sondes===[] => 'Aucun résultat de contrôle disponible. La protection des fichiers privés reste à vérifier.',
-            $r->etat==='refuse' => 'Des fichiers privés sont accessibles publiquement.',
-            $r->etat==='indetermine' => 'Certaines protections n’ont pas pu être vérifiées.',
-            default => null,
+        [$classe,$message]=match (true) {
+            $r->sondes===[] => ['avertissement','Aucun résultat de contrôle disponible. La protection des fichiers privés reste à vérifier.'],
+            $r->etat==='refuse' => ['erreur','Des fichiers privés sont accessibles publiquement.'],
+            $r->etat==='indetermine' => ['avertissement','Certaines protections n’ont pas pu être vérifiées.'],
+            default => ['information','Les protections contrôlées sont vérifiées.'],
         };
-        if ($alerte!==null) { $html.='<p class="erreur" role="alert">'.Filtre::html($alerte).'</p>'; }
+        $html.='<p class="diagnostic-protection '.$classe.'" role="status">'.Filtre::html($message).'</p>';
         if ($r->sondes!==[]) { $html.='<p>'.Filtre::html(self::bilanControle($r)).'.</p>'; }
         foreach ($r->avis as $avis) { $html.='<p>'.Filtre::html($avis).'</p>'; }
         $html.=self::sondes($r);
