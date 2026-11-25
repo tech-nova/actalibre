@@ -100,6 +100,7 @@ PHP);
         self::assertFileExists($this->racine . '/_config_init/temoin.txt');
         self::assertFileDoesNotExist($this->racine . '/sql-tente');
         self::assertStringContainsString('composer.json', $sortie . $erreurs);
+        self::assertStringContainsString('<p class="message erreur" role="alert">', $sortie);
         self::assertStringNotContainsString('mot_de_passe_confidentiel', $sortie . $erreurs);
         self::assertStringNotContainsString('Warning', $sortie . $erreurs);
         self::assertStringNotContainsString('Fatal error', $sortie . $erreurs);
