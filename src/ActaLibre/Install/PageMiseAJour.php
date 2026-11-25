@@ -37,9 +37,8 @@ final class PageMiseAJour
             $chemin=str_replace('\\','/',dirname((string)($_SERVER['SCRIPT_NAME']??'/update.php')));
             $chemin=$chemin==='.'||$chemin==='/'?'/':rtrim($chemin,'/').'/';
             SessionMiseAJour::ouvrir($chemin,Cookie::enHttps());$jeton=SessionMiseAJour::jeton();
-            // Identifiants ExpoActes perdus : un nouvel administrateur peut être créé sur preuve FTP.
-            $creation=in_array($etat->action,['expoactes','reprendre'],true);
-            if ($creation) $preuve=PreuveFtp::nom($_SESSION);
+            // Identifiants perdus : un nouvel administrateur peut être créé sur preuve FTP, quelle que soit l'action disponible.
+            $preuve=PreuveFtp::nom($_SESSION);
             if ($methode==='POST') {
                 if (!SessionMiseAJour::verifierJeton(self::lirePost('jeton'))) {
                     http_response_code(403);self::vue('Formulaire expiré ou jeton invalide.',$etat,$jeton,false,[]);return;
@@ -59,17 +58,16 @@ final class PageMiseAJour
                     $autorisation=SessionMiseAJour::authentifier($c->comptes,$a->prefixe,self::lirePost('login'),self::lirePost('mot_de_passe'),$perimetre,$limiteur,$adresse);
                     SessionMiseAJour::lierProcedure($etat);
                 } elseif ($action==='creer') {
-                    if (!$creation) throw new \RuntimeException('Création d’administrateur réservée à la migration depuis ExpoActes.');
-                    if (!PreuveFtp::presente($racine,$_SESSION)) throw new \RuntimeException('Fichier de preuve introuvable : déposez-le par FTP dans _config/ puis validez à nouveau.');
-                    $login=self::lirePost('login');$motDePasse=self::lirePost('mot_de_passe');
-                    if ($motDePasse!==self::lirePost('confirmation')) throw new \RuntimeException('Les mots de passe doivent être identiques.');
+                    $login=self::lirePost('login');$courriel=self::lirePost('courriel');$motDePasse=self::lirePost('mot_de_passe');
+                    FormulaireAdministrateur::controler(PreuveFtp::presente($racine,$_SESSION),$login,$courriel,$motDePasse,self::lirePost('confirmation'));
                     $a=$configuration->comptes??$configuration->actes;
-                    Administrateur::ajouter($c->comptes,$a->prefixe,$login,self::lirePost('courriel'),$motDePasse);
+                    Administrateur::ajouter($c->comptes,$a->prefixe,$login,$courriel,$motDePasse);
                     $cree=$login;$saisie=null;
                     PreuveFtp::consommer($racine,$_SESSION);$preuve='';
                     $autorisation=SessionMiseAJour::authentifier($c->comptes,$a->prefixe,$login,$motDePasse,$perimetre);
                     SessionMiseAJour::lierProcedure($etat);
-                    $action='demarrer';
+                    // L'action vient de l'état lu en base, jamais du formulaire.
+                    $action=self::actionInitiale($etat);
                 } elseif ($action==='continuer') {
                     $autorisation=SessionMiseAJour::autorisation($perimetre);
                     if ($autorisation===null) throw new \RuntimeException('Authentification expirée. Reconnectez-vous pour reprendre.');
@@ -93,6 +91,8 @@ final class PageMiseAJour
         if ($cree!=='' && !$administrateur) $message.=' Le compte administrateur « '.$cree.' » a été créé : reconnectez-vous avec ce compte ci-dessous pour reprendre la mise à jour.';
         self::vue($message,$etat,$jeton,$suite,$avis,$administrateur,$origine,$diagnostic,$preuve,$saisie,$cree);
     }
+    private static function actionInitiale(EtatExploitation $etat): string
+    { return match($etat->action) { 'produit'=>'produit','nettoyer'=>'nettoyer',default=>'demarrer' }; }
     private static function lirePost(string $nom): string
     {
         $valeur=$_POST[$nom]??'';
@@ -118,7 +118,7 @@ final class PageMiseAJour
         foreach ($avis as $a) echo '<p>'.Filtre::html($a).'</p>';
         $admis=$etat!==null && in_array($etat->action,['expoactes','reprendre','produit','nettoyer'],true) && $jeton!=='';
         if ($admis) {
-            $action=$suite?'continuer':match($etat->action) { 'produit'=>'produit','nettoyer'=>'nettoyer',default=>'demarrer' };
+            $action=$suite?'continuer':self::actionInitiale($etat);
             echo '<form id="poursuite" method="post" action=""><input type="hidden" name="action" value="'.$action.'"><input type="hidden" name="jeton" value="'.Filtre::html($jeton).'">';
             if ($origine==='') $origine=(Cookie::enHttps()?'https://':'http://').(string)($_SERVER['HTTP_HOST']??'localhost').rtrim(str_replace('\\','/',dirname((string)($_SERVER['SCRIPT_NAME']??'/update.php'))),'/').'/';
             // Pendant la poursuite automatique, l'adresse reste transmise sans libellé visible.
@@ -130,12 +130,10 @@ final class PageMiseAJour
                 echo '<details'.($saisie!==null?' open':'').'><summary>Identifiants perdus : créer un nouvel administrateur</summary>';
                 if ($saisie!==null) echo '<p class="erreur" role="alert">'.Filtre::html($message).'</p>';
                 echo '<form class="poursuite" method="post" action=""><input type="hidden" name="action" value="creer"><input type="hidden" name="jeton" value="'.Filtre::html($jeton).'">';
-                echo '<p>Pour prouver que vous contrôlez ce serveur, déposez par FTP un fichier vide nommé <code>'.Filtre::html($preuve).'</code> dans le dossier <code>_config/</code>, puis validez ce formulaire. Ce nom est valable une heure, dans ce navigateur ; le fichier est supprimé après la création du compte, et la migration démarre aussitôt.</p>';
+                echo FormulaireAdministrateur::consigne($preuve,$action==='nettoyer'?', et le nettoyage démarre aussitôt':', et la mise à jour démarre aussitôt');
                 echo '<label>Adresse complète du site <input name="url_site" type="url" value="'.Filtre::html($origine).'" required></label>';
-                foreach (['login'=>['Identifiant','text','username'],'courriel'=>['Courriel','email','email'],'mot_de_passe'=>['Mot de passe','password','new-password'],'confirmation'=>['Confirmation du mot de passe','password','new-password']] as $nom=>[$libelle,$type,$auto]) {
-                    echo '<label for="creer_'.$nom.'">'.$libelle.'</label><input id="creer_'.$nom.'" name="'.$nom.'" type="'.$type.'" value="'.Filtre::html($saisie[$nom]??'').'" autocomplete="'.$auto.'" required>';
-                }
-                echo '<button type="submit">Créer l’administrateur et mettre à jour</button></form></details>';
+                echo FormulaireAdministrateur::champs($saisie??[]);
+                echo '<button type="submit">Créer l’administrateur et '.($action==='nettoyer'?'nettoyer les restes':'mettre à jour').'</button></form></details>';
             }
             // La roue reste animée pendant que le navigateur attend la réponse suivante : pas d'iframe nécessaire.
             echo '<div id="attente" class="attente'.($suite?' active':'').'" role="status" aria-live="polite"><span aria-hidden="true"></span><strong>'.($action==='nettoyer'?'Nettoyage en cours':'Mise à jour en cours').', ne fermez pas cette page…</strong></div>';

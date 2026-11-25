@@ -50,17 +50,10 @@ final class Administrateur
         if ($table === null || self::existe($lien, $prefixe) || self::lignes($lien, "SELECT ID FROM `{$table}` WHERE login=?", [$login]) !== []) {
             throw new \RuntimeException('Création du compte administrateur refusée.');
         }
-        try {
-            $r = Requete::executer($lien, "INSERT INTO `{$table}` (login,hashpass,email,level) VALUES (?,?,?,9)", [$login, MotDePasse::hacher($motDePasse), $courriel]);
-        } catch (\mysqli_sql_exception) {
-            throw new \RuntimeException('Impossible de créer le compte administrateur.');
-        }
-        if ($r === false) {
-            throw new \RuntimeException('Impossible de créer le compte administrateur.');
-        }
+        self::inserer($lien, $table, $login, $courriel, MotDePasse::hacher($motDePasse));
     }
     /**
-     * Administrateur supplémentaire, autorisé par une preuve FTP, sur une base ExpoActes à migrer.
+     * Administrateur supplémentaire, autorisé par une preuve FTP, sur une base ExpoActes ou ActaLibre à mettre à jour.
      * Avant l'élargissement de hashpass, l'empreinte garde l'ancien format que la migration convertira.
      */
     public static function ajouter(\mysqli $lien, string $prefixe, string $login, string $courriel, #[\SensitiveParameter] string $motDePasse): void
@@ -81,12 +74,19 @@ final class Administrateur
         if (strlen($empreinte) > (int) $m[1]) {
             $empreinte = MotDePasse::hacherAncienFormat($motDePasse);
         }
+        self::inserer($lien, $table, $login, $courriel, $empreinte);
+        if (!self::verifier($lien, $prefixe, $login, $motDePasse)) {
+            throw new \RuntimeException('Impossible de créer le compte administrateur.');
+        }
+    }
+    private static function inserer(\mysqli $lien, string $table, string $login, string $courriel, string $empreinte): void
+    {
         try {
             $r = Requete::executer($lien, "INSERT INTO `{$table}` (login,hashpass,email,level) VALUES (?,?,?,9)", [$login, $empreinte, $courriel]);
         } catch (\mysqli_sql_exception) {
             throw new \RuntimeException('Impossible de créer le compte administrateur.');
         }
-        if ($r === false || !self::verifier($lien, $prefixe, $login, $motDePasse)) {
+        if ($r === false) {
             throw new \RuntimeException('Impossible de créer le compte administrateur.');
         }
     }
