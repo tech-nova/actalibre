@@ -28,7 +28,7 @@ final class InventaireTest extends TestCase
     private function ecrire(array $modifications = []): void
     {
         file_put_contents($this->racine . '/inventaire-actalibre.json', json_encode(array_replace([
-            'format' => 1, 'version' => '1.1.3', 'schema' => '1.0.0', 'revision' => str_repeat('a', 40),
+            'format' => 1, 'version' => '1.2.0', 'schema' => '1.0.0', 'revision' => str_repeat('a', 40),
             'fichiers' => ['composer.json', 'inventaire-actalibre.json', 'src/application.php'], 'repertoires' => ['src'],
         ], $modifications), JSON_THROW_ON_ERROR));
     }
@@ -36,7 +36,7 @@ final class InventaireTest extends TestCase
     {
         $this->ecrire();
         $i = Inventaire::lire($this->racine);
-        self::assertSame('1.1.3', $i->version);
+        self::assertSame('1.2.0', $i->version);
         self::assertSame(['src'], $i->repertoires());
         self::assertCount(3, $i->fichiers());
         unlink($this->racine . '/src/application.php');
