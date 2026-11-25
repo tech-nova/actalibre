@@ -32,13 +32,13 @@ final class ResumeProtectionTest extends BaseDiagnostic
     {
         $sondes = array_fill_keys(self::SONDES, ['etat'=>'verifie','http'=>403,'cause'=>null]);
         // 23 h 30 UTC le 14 correspond au 15 à Paris.
-        self::assertTrue((new RapportProtection('verifie','1.1.3','http://localhost/',$sondes,[],'2026-09-14T23:30:00Z'))->enregistrer($this->root));
+        self::assertTrue((new RapportProtection('verifie','1.2.0','http://localhost/',$sondes,[],'2026-09-14T23:30:00Z'))->enregistrer($this->root));
         self::assertSame('État : vérifiée le 15/09/2026', $this->resume()['protection']);
     }
     public function testRapportIndetermine(): void
     {
         $sondes = array_fill_keys(self::SONDES, ['etat'=>'indetermine','http'=>null,'cause'=>'public']);
-        self::assertTrue((new RapportProtection('indetermine','1.1.3','http://localhost/',$sondes,[],'2026-09-15T08:00:00Z'))->enregistrer($this->root));
+        self::assertTrue((new RapportProtection('indetermine','1.2.0','http://localhost/',$sondes,[],'2026-09-15T08:00:00Z'))->enregistrer($this->root));
         self::assertSame('État : indéterminée le 15/09/2026', $this->resume()['protection']);
     }
     public function testCheminsInconnusAuSingulierEtAuPluriel(): void
@@ -61,7 +61,7 @@ final class ResumeProtectionTest extends BaseDiagnostic
     public function testLaPageDeControleAfficheUneDateLisibleEnHeureLocale(): void
     {
         $sondes = array_fill_keys(self::SONDES, ['etat'=>'verifie','http'=>403,'cause'=>null]);
-        self::assertTrue((new RapportProtection('verifie','1.1.3','https://exemple.org/',$sondes,[],'2026-11-09T19:12:32Z'))->enregistrer($this->root));
+        self::assertTrue((new RapportProtection('verifie','1.2.0','https://exemple.org/',$sondes,[],'2026-11-09T19:12:32Z'))->enregistrer($this->root));
         $html = DiagnosticInstallation::html($this->root, 'base', '_upload');
         self::assertStringContainsString('Dernier contrôle : le 09/11/2026 à 20h12, adresse https://exemple.org/', $html);
         self::assertStringNotContainsString('2026-11-09T19:12:32Z', $html);

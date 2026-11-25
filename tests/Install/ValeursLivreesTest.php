@@ -125,7 +125,7 @@ PHP);
         self::assertSame('', $erreurs);
         self::assertSame(0, $code, $sortie);
         self::assertSame([
-            'version' => '1.1.3',
+            'version' => '1.2.0',
             'schema' => '1.0.0',
             'installation' => false,
             'migration' => false,
