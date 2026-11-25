@@ -77,7 +77,7 @@ final class PageMiseAJour
                 $administrateur=true;
                 $etat=EtatExploitation::lire($c,$racine.'/composer.json');
                 $message=$resultat['diagnostic'];$avis=$resultat['avis'];$suite=!$resultat['terminee'];
-                if (!$suite) $diagnostic=DiagnosticInstallation::html($racine,$configuration->actes->base,DiagnosticInstallation::depot($c->actes,$configuration->actes->prefixe));
+                if (!$suite) $diagnostic=DiagnosticInstallation::html($racine,$configuration->actes->base,DiagnosticInstallation::depot($c->actes,$configuration->actes->prefixe),'admin/protection.php');
             }
         } catch (\RuntimeException|\InvalidArgumentException $e) {
             http_response_code($jeton===''?503:400);$message=$e->getMessage();

@@ -115,7 +115,7 @@ final class PageInstallation
                     }
                     $message = $compteExiste ? 'Installation terminée.' : 'Installation terminée. Le compte administrateur a été créé.';
                     $ecran = null;
-                    $diagnostic = DiagnosticInstallation::html($racine, $configuration->actes->base, '_upload');
+                    $diagnostic = DiagnosticInstallation::html($racine, $configuration->actes->base, '_upload', 'admin/protection.php');
                 }
             }
         } catch (\RuntimeException|\InvalidArgumentException $e) {

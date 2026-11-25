@@ -24,6 +24,12 @@ final class DiagnosticInstallationTest extends BaseDiagnostic
         self::assertStringNotContainsString('Aucun chemin inconnu détecté', $html);
     }
 
+    public function testLeLienVersLeControleEstReserveAuxPagesExterieures(): void
+    {
+        self::assertStringContainsString('href="admin/protection.php"', DiagnosticInstallation::html($this->root, 'base', '_upload', 'admin/protection.php'));
+        self::assertStringNotContainsString('href=', DiagnosticInstallation::html($this->root, 'base', '_upload'));
+    }
+
     public function testUnInventaireAbsentResteSignaleCommeTel(): void
     {
         unlink($this->root.'/inventaire-actalibre.json');

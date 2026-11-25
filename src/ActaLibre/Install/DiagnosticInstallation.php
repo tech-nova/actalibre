@@ -60,11 +60,13 @@ final class DiagnosticInstallation
         }
         return $html.'</table>';
     }
-    public static function html(string $racine,string $base,string $depot): string
+    /** $page : adresse de la page de contrôle, proposée hors de l'administration. */
+    public static function html(string $racine,string $base,string $depot,string $page=''): string
     {
         $r=RapportProtection::lire($racine);
         $html='<h2>Protection et fichiers du site</h2><p>Contrôle : '.Filtre::html(self::ETATS[$r->etat] ?? $r->etat).'.</p>';
         if ($r->avertissement()!==null) { $html.='<p class="erreur">'.Filtre::html($r->avertissement()).'</p>'; }
+        if ($page!=='') { $html.='<p><a href="'.Filtre::html($page).'">Détail et nouveau contrôle des protections</a></p>'; }
         foreach ($r->avis as $avis) { $html.='<p>'.Filtre::html($avis).'</p>'; }
         $html.=self::sondes($r);
         $analyse=self::analyserFichiers($racine,$base,$depot);
