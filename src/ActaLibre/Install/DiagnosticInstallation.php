@@ -68,10 +68,19 @@ final class DiagnosticInstallation
     {
         $r=RapportProtection::lire($racine);
         $html='<h2>Protection et fichiers du site</h2>';
-        if ($r->sondes===[]) { $html.='<p class="erreur">Contrôle non réalisé. La protection des fichiers privés reste à vérifier.</p>'; }
-        if ($page!=='') { $html.='<p><a href="'.Filtre::html($page).'">Détail et nouveau contrôle des protections</a></p>'; }
+        $alerte=match (true) {
+            $r->sondes===[] => 'Aucun résultat de contrôle disponible. La protection des fichiers privés reste à vérifier.',
+            $r->etat==='refuse' => 'Des fichiers privés sont accessibles publiquement.',
+            $r->etat==='indetermine' => 'Certaines protections n’ont pas pu être vérifiées.',
+            default => null,
+        };
+        if ($alerte!==null) { $html.='<p class="erreur" role="alert">'.Filtre::html($alerte).'</p>'; }
         foreach ($r->avis as $avis) { $html.='<p>'.Filtre::html($avis).'</p>'; }
         $html.=self::sondes($r);
+        if ($page!=='') {
+            $libelle=$r->sondes===[] ? 'Contrôler les protections' : 'Relancer le contrôle';
+            $html.='<p><a href="'.Filtre::html($page).'">'.$libelle.'</a></p>';
+        }
         $analyse=self::analyserFichiers($racine,$base,$depot);
         if ($analyse['etat']==='depot') {
             return $html.'<p>Analyse des fichiers non réalisée : réglage UPLOAD_DIR invalide. Indiquez un chemin relatif interne au dossier admin, sans « .. ».</p>';
