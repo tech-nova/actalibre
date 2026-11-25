@@ -25,7 +25,7 @@ final class DiagnosticInstallation
             return $rapport;
         } catch (\Throwable) { return new RapportProtection('indetermine','','',[],['Contrôle de protection indisponible.']); }
     }
-    public const ETATS = ['verifie'=>'vérifiée','refuse'=>'refusée','indetermine'=>'indéterminée'];
+    public const ETATS = ['verifie'=>'vérifiée','refuse'=>'refusée','indetermine'=>'non vérifiable'];
     private const SONDES = [
         'public'=>'Fichier public témoin (doit être servi)',
         'tmp'=>'Dossier tmp/',
@@ -56,7 +56,10 @@ final class DiagnosticInstallation
         $html='<p>Dernier contrôle : '.Filtre::html($quand ?? $r->date).', adresse '.Filtre::html($r->origine).'</p><table><tr><th>Essai</th><th>Résultat</th><th>HTTP</th><th>Cause</th></tr>';
         foreach ($r->sondes as $nom=>$s) {
             $cause=$s['cause'] ?? null;
-            $html.='<tr><td>'.Filtre::html(self::SONDES[$nom] ?? $nom).'</td><td>'.Filtre::html(self::ETATS[$s['etat']] ?? $s['etat']).'</td><td>'.($s['http'] === null ? '—' : (int)$s['http']).'</td><td>'.Filtre::html($cause === null ? '' : (self::CAUSES[$cause] ?? $cause)).'</td></tr>';
+            $explication=$cause === null ? '' : (self::CAUSES[$cause] ?? $cause);
+            // Ces deux fichiers existent dans la livraison : aucun témoin n'est créé pour eux.
+            if ($cause==='non_prepare' && in_array($nom,['composer','inventaire'],true)) { $explication='fichier absent ou chemin non autorisé'; }
+            $html.='<tr><td>'.Filtre::html(self::SONDES[$nom] ?? $nom).'</td><td>'.Filtre::html(ucfirst(self::ETATS[$s['etat']] ?? $s['etat'])).'</td><td>'.($s['http'] === null ? 'x' : (int)$s['http']).'</td><td>'.Filtre::html($explication).'</td></tr>';
         }
         return $html.'</table>';
     }
@@ -64,8 +67,8 @@ final class DiagnosticInstallation
     public static function html(string $racine,string $base,string $depot,string $page=''): string
     {
         $r=RapportProtection::lire($racine);
-        $html='<h2>Protection et fichiers du site</h2><p>Contrôle : '.Filtre::html(self::ETATS[$r->etat] ?? $r->etat).'.</p>';
-        if ($r->avertissement()!==null) { $html.='<p class="erreur">'.Filtre::html($r->avertissement()).'</p>'; }
+        $html='<h2>Protection et fichiers du site</h2>';
+        if ($r->sondes===[]) { $html.='<p class="erreur">Contrôle non réalisé. La protection des fichiers privés reste à vérifier.</p>'; }
         if ($page!=='') { $html.='<p><a href="'.Filtre::html($page).'">Détail et nouveau contrôle des protections</a></p>'; }
         foreach ($r->avis as $avis) { $html.='<p>'.Filtre::html($avis).'</p>'; }
         $html.=self::sondes($r);

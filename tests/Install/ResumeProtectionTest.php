@@ -39,7 +39,7 @@ final class ResumeProtectionTest extends BaseDiagnostic
     {
         $sondes = array_fill_keys(self::SONDES, ['etat'=>'indetermine','http'=>null,'cause'=>'public']);
         self::assertTrue((new RapportProtection('indetermine','1.2.0','http://localhost/',$sondes,[],'2026-09-15T08:00:00Z'))->enregistrer($this->root));
-        self::assertSame('État : indéterminée le 15/09/2026', $this->resume()['protection']);
+        self::assertSame('État : non vérifiable le 15/09/2026', $this->resume()['protection']);
     }
     public function testCheminsInconnusAuSingulierEtAuPluriel(): void
     {

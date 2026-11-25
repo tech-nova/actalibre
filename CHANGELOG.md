@@ -4,6 +4,7 @@
 
 ### Corrigé
 
+- Contrôle des protections : le tableau affiche « Non vérifiable » et « x » en l’absence de code HTTP, sans annoncer un contrôle indéterminé ni renvoyer vers le tableau déjà affiché. Un rapport absent est distingué d’un contrôle effectué, et un fichier de livraison absent n’est plus présenté comme un témoin impossible à déposer.
 - `update.php` : le contrôle des protections est lancé après une mise à jour du produit ou un nettoyage. Le rapport de la version précédente n'étant plus valable, l'écran final annonçait une protection indéterminée sans l'avoir contrôlée.
 - `install.php` et `update.php` : le bilan final donne un lien vers la page de contrôle des protections.
 
