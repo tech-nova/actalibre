@@ -37,6 +37,7 @@ final class MiseAJourParcoursTest extends TestCase
     {
         $this->preparer(true,$gzip?['output_buffering=4096','zlib.output_compression=1']:[]);$c=$this->site->client();$accueil=$c->get('/update.php');$j=$this->jeton($accueil);
         self::assertStringContainsString('<div id="attente" class="attente" role="status"',$accueil->corps);self::assertStringContainsString('Adresse complète du site',$accueil->corps);
+        self::assertStringContainsString('<p class="message" role="status">',$accueil->corps);self::assertStringNotContainsString('role="alert"',$accueil->corps);
         $r=$c->post('/update.php',['url_site'=>$this->site->url().'/', 'action'=>'demarrer','jeton'=>$j,'login'=>'admin','mot_de_passe'=>SourceExpoActes::MOT_DE_PASSE]);
         for ($i=0;$i<100 && str_contains($r->corps,'name="action" value="continuer"');$i++) {
             self::assertSame(200,$r->statut,$r->corps);self::assertStringContainsString('method="post"',$r->corps);self::assertStringContainsString('Continuer',$r->corps);self::assertStringContainsString('<div id="attente" class="attente active" role="status"',$r->corps);self::assertStringNotContainsString('Adresse complète du site',$r->corps);
@@ -117,7 +118,9 @@ final class MiseAJourParcoursTest extends TestCase
         self::assertSame('0',$this->site->base->query("SELECT COUNT(*) FROM {$this->site->prefixe}_user3 WHERE login='nou\"veau'")->fetch_row()[0]);
         // Un échec du premier formulaire n'ouvre pas la création.
         $r=$c->post('/update.php',['url_site'=>$this->site->url().'/','action'=>'demarrer','jeton'=>$this->jeton($accueil),'login'=>'admin','mot_de_passe'=>'faux-2026']);
-        self::assertSame(400,$r->statut);self::assertStringNotContainsString('<details open>',$r->corps);self::assertStringNotContainsString('role="alert"',$r->corps);
+        self::assertSame(400,$r->statut);self::assertStringNotContainsString('<details open>',$r->corps);
+        self::assertStringContainsString('<p class="message erreur" role="alert">Identifiants administrateur invalides.</p>',$r->corps);
+        self::assertSame(1,substr_count($r->corps,'role="alert"'));
         self::assertSame('',$this->site->journal());
     }
     public function testUnEchecApresCreationInviteASeConnecterAvecLeCompteCree(): void

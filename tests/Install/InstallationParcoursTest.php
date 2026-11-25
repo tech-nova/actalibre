@@ -70,6 +70,7 @@ final class InstallationParcoursTest extends TestCase
         $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $this->jeton($c)]);
         self::assertSame(400, $r->statut);
         self::assertStringContainsString('preuve', $r->corps);
+        self::assertStringContainsString('<p class="message erreur" role="alert">', $r->corps);
         self::assertSame($avant, $this->empreinte());
         $autre = $this->site->deuxiemeClient();
         touch($this->preuve($autre));
@@ -79,6 +80,8 @@ final class InstallationParcoursTest extends TestCase
         $r = $c->post('/install.php', $this->site->formulaire() + ['jeton' => $this->jeton($c)]);
         self::assertSame(200, $r->statut, $r->corps);
         self::assertStringContainsString('Installation terminée', $r->corps);
+        self::assertStringContainsString('<p class="message" role="status">Installation terminée', $r->corps);
+        self::assertStringNotContainsString('role="alert"', $r->corps);
         self::assertStringNotContainsString('Secret-2026', $r->corps);
         self::assertFileDoesNotExist($preuve);
         self::assertFileExists($this->site->racine . '/_config/connect.inc.php');
