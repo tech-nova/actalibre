@@ -62,7 +62,7 @@ final class DiagnosticInstallationTest extends BaseDiagnostic
         $sondes = array_fill_keys(['tmp','tmp_php','configuration','installation','depot','composer','inventaire'], ['etat'=>'verifie', 'http'=>403, 'cause'=>null]);
         $sondes['public'] = $sondes['css'] = ['etat'=>'verifie', 'http'=>200, 'cause'=>null];
         $sondes['tmp'] = ['etat'=>$etat, 'http'=>$http, 'cause'=>$cause];
-        self::assertTrue((new RapportProtection($etat, '1.2.0', 'https://exemple.test/', $sondes))->enregistrer($this->root));
+        self::assertTrue((new RapportProtection($etat, '1.2.1', 'https://exemple.test/', $sondes))->enregistrer($this->root));
         $html = DiagnosticInstallation::html($this->root, 'base', '_upload', 'admin/protection.php');
         $bandeau = '<p class="diagnostic-protection '.$classe.'" role="status">'.$message.'</p>';
         self::assertStringContainsString($bandeau, $html);
@@ -134,7 +134,7 @@ final class DiagnosticInstallationTest extends BaseDiagnostic
     public function testLaCauseDistingueUnEssaiNonLanceDUnObstacleOuDUneReponseIndeterminee(?string $cause, ?int $http, string $resultat): void
     {
         $sondes = array_fill_keys(['public','tmp','tmp_php','configuration','css','installation','depot','composer','inventaire'], ['etat'=>'indetermine', 'http'=>$http, 'cause'=>$cause]);
-        self::assertTrue((new RapportProtection('indetermine', '1.2.0', 'https://exemple.test/', $sondes))->enregistrer($this->root));
+        self::assertTrue((new RapportProtection('indetermine', '1.2.1', 'https://exemple.test/', $sondes))->enregistrer($this->root));
         $html = DiagnosticInstallation::html($this->root, 'base', '_upload');
         self::assertStringContainsString('<td>Dossier tmp/</td><td>'.$resultat.'</td>', $html);
         self::assertStringNotContainsString('Contrôle partiel', $html);
@@ -150,7 +150,7 @@ final class DiagnosticInstallationTest extends BaseDiagnostic
         $sondes = array_fill_keys(['public','tmp','tmp_php','configuration','css','installation','depot','composer','inventaire'], ['etat'=>'indetermine', 'http'=>null, 'cause'=>'budget']);
         $sondes['public'] = ['etat'=>'verifie', 'http'=>200, 'cause'=>null];
         $sondes['tmp'] = ['etat'=>'refuse', 'http'=>200, 'cause'=>null];
-        self::assertTrue((new RapportProtection('refuse', '1.2.0', 'https://exemple.test/', $sondes))->enregistrer($this->root));
+        self::assertTrue((new RapportProtection('refuse', '1.2.1', 'https://exemple.test/', $sondes))->enregistrer($this->root));
         $html = DiagnosticInstallation::html($this->root, 'base', '_upload');
         self::assertStringContainsString('Contrôle partiel : 2 essais concluants sur 9.', $html);
         self::assertStringContainsString('<p class="diagnostic-protection erreur" role="status">Des fichiers privés sont accessibles publiquement.</p>', $html);

@@ -118,7 +118,7 @@ PYTHON;
         self::assertStringNotContainsString('Secret-archive-2026',$r->corps);
         self::assertSame('0',$this->actes->query("SELECT COUNT(*) FROM {$this->prefixe}_params WHERE param='EA_VERSION'")->fetch_row()[0]);
         self::assertSame('1',$this->actes->query("SELECT COUNT(*) FROM {$this->prefixe}_user3 WHERE level=9")->fetch_row()[0]);
-        self::assertSame(['1.0.0','1.2.0'],array_column($this->actes->query("SELECT valeur FROM {$this->prefixe}_params WHERE param IN ('ACTALIBRE_VERSION','ACTALIBRE_SCHEMA') ORDER BY param")->fetch_all(MYSQLI_ASSOC),'valeur'));
+        self::assertSame(['1.0.0','1.2.1'],array_column($this->actes->query("SELECT valeur FROM {$this->prefixe}_params WHERE param IN ('ACTALIBRE_VERSION','ACTALIBRE_SCHEMA') ORDER BY param")->fetch_all(MYSQLI_ASSOC),'valeur'));
         self::assertFileExists($this->root.'/tmp/logs/.keep');self::assertFileExists($this->root.'/tmp/backups/.keep');
         self::assertFileExists($this->root.'/_config/connect.inc.php');
         self::assertSame('SENTINELLE INERTE',file_get_contents($this->root.'/inconnu-'.str_repeat('a',12).'.php'));

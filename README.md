@@ -4,7 +4,7 @@ ActaLibre est un fork d'ExpoActes 3.2.4, une solution web PHP MySQL OpenSource q
 Il renforce la sécurité, porte le code vers PHP 8.4 et le refactorise progressivement, sans changer l'interface. Il n'est pas maintenu par l'équipe d'ExpoActes.
 
 Dernières versions :
-- ActaLibre 1.2.0
+- ActaLibre 1.2.1
 - Version d'origine : ExpoActes version 3.2.4 (février 2022)
 
 ## Liens utiles sur ExpoActes
