@@ -38,7 +38,7 @@ function load_params()
 		while ($row = EA_sql_fetch_array($result))
 			{
 			if (\ActaLibre\Install\Marqueurs::est($row["param"]) || $row["param"] === \ActaLibre\Install\EtatSite::PARAMETRE_HISTORIQUE) continue;
-			if (!defined($row["param"])) define ($row["param"],html_entity_decode($row["valeur"], ENTITY_REPLACE_FLAGS, ENTITY_CHARSET));
+			if (!defined($row["param"])) define ($row["param"],html_entity_decode($row["valeur"], \ActaLibre\Parametres\Encodage::DRAPEAUX, ENTITY_CHARSET));
 			//echo "<br>".$row["param"]." = ".constant($row["param"]);
 			}
 		}

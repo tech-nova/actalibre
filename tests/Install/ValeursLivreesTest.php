@@ -129,7 +129,7 @@ PHP);
             'schema' => '1.0.0',
             'installation' => false,
             'migration' => false,
-            'titre' => 'Site & test',
+            'titre' => 'Site été & test',
             'version_heritee' => false,
             'format_herite' => false,
         ], json_decode($sortie, true, 512, JSON_THROW_ON_ERROR));

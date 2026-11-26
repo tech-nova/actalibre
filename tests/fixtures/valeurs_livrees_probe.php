@@ -7,9 +7,9 @@ $racine = $argv[2];
 
 if ($mode === 'parametres' || $mode === 'sans-marqueurs') {
     require $racine . '/src/autoload.php';
-    define('ENTITY_REPLACE_FLAGS', ENT_COMPAT | ENT_HTML5);
+    define('ENTITY_REPLACE_FLAGS', ENT_COMPAT | ENT_XML1);
     define('ENTITY_CHARSET', 'UTF-8');
-    $GLOBALS['parametres_sonde'] = [['param' => 'SITENAME', 'valeur' => 'Site &amp; test']];
+    $GLOBALS['parametres_sonde'] = [['param' => 'SITENAME', 'valeur' => 'Site &eacute;t&eacute; &amp; test']];
     if ($mode === 'parametres') {
         foreach (['ACTALIBRE_VERSION' => '9.8.7', 'ACTALIBRE_SCHEMA' => '9.0.0', 'ACTALIBRE_INSTALLATION' => 'en cours', 'ACTALIBRE_MIGRATION' => '3'] as $nom => $valeur) {
             $GLOBALS['parametres_sonde'][] = ['param' => $nom, 'valeur' => $valeur];

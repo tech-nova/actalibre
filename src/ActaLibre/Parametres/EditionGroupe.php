@@ -27,7 +27,7 @@ final class EditionGroupe
             if (!$r instanceof \mysqli_result) { throw new \RuntimeException('Lecture des paramètres impossible.'); }
             $ligne = $r->fetch_assoc();
             if ($ligne === null || $ligne === false || $ligne['groupe'] !== $groupe || Marqueurs::ressemble((string) $ligne['param'])) { continue; }
-            $valeur = htmlentities($p['valeur'], ENT_COMPAT | ENT_XHTML, 'UTF-8');
+            $valeur = htmlentities($p['valeur'], Encodage::DRAPEAUX, 'UTF-8');
             if ($valeur === '' && $ligne['type'] === 'B') { $valeur = '0'; }
             $ok = Requete::executer($lien, 'UPDATE ' . $table . ' SET valeur = ? WHERE BINARY param = BINARY ? AND BINARY CONVERT(groupe USING utf8mb4) = BINARY CONVERT(? USING utf8mb4)', [trim($valeur), (string) $ligne['param'], $groupe]);
             if ($ok !== true) { throw new \RuntimeException('Enregistrement des paramètres impossible.'); }
