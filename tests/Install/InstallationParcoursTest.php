@@ -107,7 +107,7 @@ final class InstallationParcoursTest extends TestCase
         $q = $this->site->base->prepare("INSERT INTO {$u}_user3(login,hashpass,level,email) VALUES ('Admin',?,9,'a@example.org')");
         $q->execute([sha1('Secret-2026')]);
         $lignes = match ($version) {
-            'actuel' => ['ACTALIBRE_VERSION' => '1.2.0', 'ACTALIBRE_SCHEMA' => '1.0.0'],
+            'actuel' => ['ACTALIBRE_VERSION' => '1.2.1', 'ACTALIBRE_SCHEMA' => '1.0.0'],
             'schema' => ['ACTALIBRE_VERSION' => '0.9.0', 'ACTALIBRE_SCHEMA' => '0.9.0'],
             'produit' => ['ACTALIBRE_VERSION' => '0.9.0', 'ACTALIBRE_SCHEMA' => '1.0.0'],
             'futur' => ['ACTALIBRE_VERSION' => '2.0.0', 'ACTALIBRE_SCHEMA' => '1.0.0'],

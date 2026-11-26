@@ -1,6 +1,6 @@
 {
     "name": "actalibre/actalibre",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "ActaLibre : publication d'actes généalogiques (fork d'ExpoActes)",
     "type": "project",
     "license": "GPL-2.0-only",

@@ -159,7 +159,7 @@ final class LivraisonTest extends TestCase
     public function testLeFichierLivreDeclareLaVersionEtLesPrerequis(): void
     {
         $livraison = Livraison::lire(dirname(__DIR__) . '/composer.json');
-        self::assertSame('1.2.0', $livraison->version);
+        self::assertSame('1.2.1', $livraison->version);
         self::assertSame('1.0.0', $livraison->schema);
         self::assertSame('8.3.0', $livraison->phpMinimum);
         self::assertSame(['filter', 'gd', 'iconv', 'mbstring', 'mysqli', 'mysqlnd', 'session', 'xml'], $livraison->extensions);

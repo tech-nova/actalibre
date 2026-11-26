@@ -16,7 +16,7 @@ class MiseAJourTest extends BaseMiseAJour
         self::assertSame('1',$this->valeur('EA_MAINTENANCE'),'Le choix de maintenance de l’administrateur est conservé');
         self::assertSame($acte,$this->base->query("SELECT * FROM {$this->prefixe}_nai3")->fetch_all());
         self::assertSame(' 3.2.4 ',$this->valeur('EA_VERSION'));self::assertNull($this->valeur('ACTALIBRE_MIGRATION'));
-        self::assertSame('1.0.0',$this->valeur('ACTALIBRE_SCHEMA'));self::assertSame('1.2.0',$this->valeur('ACTALIBRE_VERSION'));
+        self::assertSame('1.0.0',$this->valeur('ACTALIBRE_SCHEMA'));self::assertSame('1.2.1',$this->valeur('ACTALIBRE_VERSION'));
         self::assertSame($configuration,file_get_contents($this->racine.'/_config/connect.inc.php'));
         $hash=$this->comptes->query("SELECT hashpass FROM {$this->prefixeComptes}_user3 WHERE ID=1")->fetch_row()[0];
         self::assertTrue(MotDePasse::verifier(SourceExpoActes::MOT_DE_PASSE,$hash));
@@ -66,7 +66,7 @@ class MiseAJourTest extends BaseMiseAJour
         $avant=$this->base->query("SELECT * FROM {$this->prefixe}_params ORDER BY param")->fetch_all(MYSQLI_ASSOC);$comptes=$this->instantaneComptes();$complet=$this->empreinte();
         $this->lancer('produit');
         $apres=$this->base->query("SELECT * FROM {$this->prefixe}_params ORDER BY param")->fetch_all(MYSQLI_ASSOC);
-        foreach ($avant as &$p) if ($p['param']==='ACTALIBRE_VERSION') $p['valeur']='1.2.0';unset($p);
+        foreach ($avant as &$p) if ($p['param']==='ACTALIBRE_VERSION') $p['valeur']='1.2.1';unset($p);
         self::assertSame($avant,$apres);self::assertSame($comptes,$this->instantaneComptes());self::assertNull($this->valeur('ACTALIBRE_MIGRATION'));
         $this->base->query("UPDATE {$this->prefixe}_params SET valeur='0.9.0' WHERE param='ACTALIBRE_VERSION'");
         self::assertSame($complet,$this->empreinte(),'Le retrait de la seule différence autorisée restitue toute la base');
@@ -85,7 +85,7 @@ class MiseAJourTest extends BaseMiseAJour
     #[DataProvider('actionsCourtes')]
     public function testLeControleDesProtectionsEstRefait(string $action): void
     {
-        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION',$action==='produit'?'0.9.0':'1.2.0');
+        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION',$action==='produit'?'0.9.0':'1.2.1');
         if ($action==='nettoyer') $this->marqueur('ACTALIBRE_INSTALLATION','reste');
         $this->identifier();
         // Rapport de la version précédente : il ne vaut plus pour cette livraison.
@@ -94,7 +94,7 @@ class MiseAJourTest extends BaseMiseAJour
         self::assertSame('',\ActaLibre\Install\RapportProtection::lire($this->racine)->version);
         self::assertTrue($this->lancer($action)['terminee']);
         $r=\ActaLibre\Install\RapportProtection::lire($this->racine);
-        self::assertSame('1.2.0',$r->version);self::assertSame('https://exemple.test/',$r->origine);self::assertCount(9,$r->sondes);
+        self::assertSame('1.2.1',$r->version);self::assertSame('https://exemple.test/',$r->origine);self::assertCount(9,$r->sondes);
     }
     public function testUnDepotInvalideNEmpechePasLaMiseAJourDuProduit(): void
     {
@@ -102,7 +102,7 @@ class MiseAJourTest extends BaseMiseAJour
         $this->marqueur('UPLOAD_DIR','../dehors');$this->identifier();
         $r=$this->lancer('produit');
         self::assertTrue($r['terminee']);self::assertCount(2,$r['avis']);self::assertContains('Contrôle de protection indisponible.',$r['avis']);
-        self::assertSame('1.2.0',$this->valeur('ACTALIBRE_VERSION'));
+        self::assertSame('1.2.1',$this->valeur('ACTALIBRE_VERSION'));
     }
     public function testLaMigrationFournitLesModelesCsv(): void
     {
@@ -111,7 +111,7 @@ class MiseAJourTest extends BaseMiseAJour
     }
     public function testUnNettoyageNeffacePasUneCibleChangee(): void
     {
-        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','1.2.0');
+        $this->marqueur('ACTALIBRE_SCHEMA','1.0.0');$this->marqueur('ACTALIBRE_VERSION','1.2.1');
         $a=Avancement::commencer($this->etat()->site->livraison);$this->marqueur('ACTALIBRE_MIGRATION',$a->encoder());$this->identifier();
         $this->marqueur('ACTALIBRE_MIGRATION',$a->suivant('verification',null)->encoder());$avant=$this->empreinte();
         try { $this->lancer('nettoyer');self::fail('Reste changé effacé'); }

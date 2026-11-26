@@ -2,8 +2,11 @@
 
 ## [Non publié]
 
+## [1.2.1] - 2026-11-25
+
 ### Corrigé
 
+- Paramètres : les zones de texte ne rajoutent plus de couche d’encodage HTML lors de l’enregistrement ; les accents des modèles de courriel sont correctement décodés. Les valeurs déjà altérées restent à réparer séparément.
 - Contrôle des protections : le tableau distingue les essais non testés, les obstacles rendant une protection non vérifiable et les réponses indéterminées. Le bilan identifie les contrôles partiels et compte les essais concluants ; un fichier de livraison absent est distingué d’un chemin interdit. Une alerte signale explicitement les fichiers privés accessibles publiquement, même dans un contrôle partiel. Sans rapport valable, le bilan et le résumé indiquent qu’aucun résultat n’est disponible, y compris si l’enregistrement a échoué. « x » indique l’absence de code HTTP et le lien « Relancer le contrôle » suit le tableau.
 - Le bilan de protection distingue erreur, avertissement et information, avec des styles propres et `role="status"`. Les résultats des essais sont nommés « Vérifié » et « En défaut » pour éviter de confondre une protection défaillante avec un accès refusé.
 - `update.php` : le contrôle des protections est lancé après une mise à jour du produit ou un nettoyage. Le rapport de la version précédente n'étant plus valable, l'écran final annonçait une protection indéterminée sans l'avoir contrôlée.

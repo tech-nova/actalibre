@@ -200,7 +200,7 @@ while ($row = EA_sql_fetch_array($result))
 			}
 		 else
 			{
-			echo '<textarea name="parvalue'.$i.'" cols="40" rows="6">'.\ActaLibre\Securite\Filtre::html(html_entity_decode($row["valeur"], ENTITY_REPLACE_FLAGS, ENTITY_CHARSET)).'</textarea>';
+			echo '<textarea name="parvalue'.$i.'" cols="40" rows="6">'.\ActaLibre\Securite\Filtre::html(html_entity_decode($row["valeur"], \ActaLibre\Parametres\Encodage::DRAPEAUX, ENTITY_CHARSET)).'</textarea>';
 			}
 		}
 	echo '  </td>';
